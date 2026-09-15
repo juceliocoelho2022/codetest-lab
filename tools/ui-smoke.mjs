@@ -19,18 +19,33 @@ assert.match(html, /<kbd>Ctrl<\/kbd>\s*\+\s*<kbd>Enter<\/kbd>/, 'keyboard shortc
 assert.match(js, /document\.addEventListener\(['"]keydown['"]/, 'keyboard shortcut listener must exist');
 assert.match(js, /clearPersonalResult/, 'clear result behavior must exist');
 
-// v0.3 execution profiles.
-assert.match(html, /id="executionProfile"/, 'execution profile selector must exist');
+// v0.3.1 professional execution-profile cards.
+assert.match(html, /id="executionProfile"[^>]*type="hidden"|type="hidden"[^>]*id="executionProfile"/, 'execution profile state must remain available to the API');
 for (const profile of [
   'JUNIT5',
   'JUNIT5_MOCKITO',
   'JUNIT5_JACOCO',
   'JUNIT5_MOCKITO_JACOCO'
 ]) {
-  assert.ok(html.includes(`value="${profile}"`), `profile ${profile} must exist`);
+  assert.ok(html.includes(`data-profile="${profile}"`), `profile card ${profile} must exist`);
 }
-assert.match(html, /value="JUNIT5_MOCKITO"\s+selected/, 'JUnit 5 + Mockito must be the default UI profile');
+assert.match(html, /class="profile-card[^\"]*active[^\"]*"[^>]*data-profile="JUNIT5_MOCKITO"|data-profile="JUNIT5_MOCKITO"[^>]*class="profile-card[^\"]*active/, 'JUnit 5 + Mockito card must be selected by default');
+assert.match(html, /id="profileHelpTitle"/, 'active profile title must exist');
+assert.match(html, /id="profileHelp"/, 'active profile description must exist');
+assert.match(js, /function selectExecutionProfile\(/, 'profile-card selection behavior must exist');
 assert.match(js, /executionProfile:\s*\$\(['"]executionProfile['"]\)\.value/, 'selected profile must be sent to the API');
+assert.match(css, /\.profile-card\.active/, 'active profile card styling must exist');
+
+// v0.3.1 numbered code editors and diagnostic navigation.
+assert.match(html, /id="personalSourceLines"/, 'Java editor line gutter must exist');
+assert.match(html, /id="personalTestLines"/, 'JUnit editor line gutter must exist');
+assert.match(html, /class="code-editor/, 'numbered editor shell must exist');
+assert.match(js, /function setupNumberedEditor\(/, 'numbered editor setup must exist');
+assert.match(js, /function renderLineNumbers\(/, 'line-number rendering must exist');
+assert.match(js, /function jumpToEditorLine\(/, 'diagnostic line navigation must exist');
+assert.match(js, /Ir para linha/, 'result must offer jump-to-line action');
+assert.match(css, /\.line-gutter/, 'line gutter styling must exist');
+assert.match(css, /\.line-number\.error-line/, 'error line styling must exist');
 
 // v2.2 result dashboard.
 assert.match(js, /function formatDuration\(/, 'human duration formatter must exist');
@@ -51,4 +66,4 @@ assert.match(css, /\.result\.COMPILE_ERROR|\.result-card\.compile-error/, 'compi
 assert.match(js, /function parseExecutionDetails\(/, 'friendly execution parser must exist');
 assert.ok(js.includes('expected:\\s*<(.+?)>\\s*but was:\\s*<(.+?)>'), 'JUnit expected/actual parsing must exist');
 
-console.log('UI_SMOKE_V22_PROFILES_OK');
+console.log('UI_SMOKE_V231_EDITOR_PROFILES_OK');
