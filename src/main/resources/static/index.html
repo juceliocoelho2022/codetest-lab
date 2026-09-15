@@ -17,12 +17,12 @@
 <body>
 <header class="hero">
   <div class="hero-copy">
-    <p class="eyebrow">JAVA 21 • JUNIT 5 • MOCKITO • DOCKER</p>
+    <p class="eyebrow">JAVA 21 • JUNIT 5 • MOCKITO • JACOCO • DOCKER</p>
     <h1>CodeTest Lab</h1>
     <p>Teste código Java no modo pessoal ou crie exercícios com testes ocultos para seus alunos.</p>
   </div>
   <div class="hero-actions">
-    <div class="badge">MVP 0.2.1</div>
+    <div class="badge">MVP 0.3</div>
     <button id="themeToggle" class="theme-toggle" type="button" aria-label="Alternar tema" title="Alternar tema">
       <span id="themeIcon" aria-hidden="true">🌙</span>
       <span id="themeLabel">Escuro</span>
@@ -40,7 +40,7 @@
     <div class="panel-heading">
       <div>
         <h2>Playground de testes</h2>
-        <p>Cole uma classe Java e o teste JUnit que deseja executar.</p>
+        <p>Escolha o perfil, cole sua classe Java e o teste que deseja executar.</p>
       </div>
       <div class="shortcut-hint"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> para executar</div>
     </div>
@@ -49,6 +49,17 @@
       <label class="class-field">Nome da classe
         <input id="personalClassName" value="Calculadora" maxlength="180">
       </label>
+
+      <label class="profile-field">Perfil de execução
+        <select id="executionProfile" aria-describedby="profileHelp">
+          <option value="JUNIT5">JUnit 5</option>
+          <option value="JUNIT5_MOCKITO" selected>JUnit 5 + Mockito</option>
+          <option value="JUNIT5_JACOCO">JUnit 5 + JaCoCo</option>
+          <option value="JUNIT5_MOCKITO_JACOCO">JUnit 5 + Mockito + JaCoCo</option>
+        </select>
+        <span id="profileHelp" class="field-help">JUnit 5 executa testes; Mockito habilita mocks.</span>
+      </label>
+
       <div class="run-actions">
         <button id="clearPersonalResult" class="ghost" type="button">Limpar resultado</button>
         <button id="runPersonal" class="primary run-button" type="button">▶ Executar testes</button>
