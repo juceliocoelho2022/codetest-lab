@@ -1,6 +1,7 @@
 package br.com.codetestlab.web;
 
 import br.com.codetestlab.execution.CodeExecutor;
+import br.com.codetestlab.execution.ExecutionProfile;
 import br.com.codetestlab.execution.ExecutionRequest;
 import br.com.codetestlab.execution.ExecutionResult;
 import br.com.codetestlab.web.dto.PlaygroundRunRequest;
@@ -22,7 +23,11 @@ public class PlaygroundController {
 
     @PostMapping("/run")
     public ResponseEntity<ExecutionResult> run(@Valid @RequestBody PlaygroundRunRequest request) {
+        ExecutionProfile profile = ExecutionProfile.fromNullable(request.executionProfile());
         return ResponseEntity.ok(codeExecutor.execute(ExecutionRequest.source(
-                request.className(), request.sourceCode(), request.testCode())));
+                request.className(),
+                request.sourceCode(),
+                request.testCode(),
+                profile)));
     }
 }
