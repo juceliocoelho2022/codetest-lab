@@ -47,6 +47,15 @@ assert.match(js, /Ir para linha/, 'result must offer jump-to-line action');
 assert.match(css, /\.line-gutter/, 'line gutter styling must exist');
 assert.match(css, /\.line-number\.error-line/, 'error line styling must exist');
 
+// Regression: profile cards may not squeeze the editors on short/wide viewports.
+assert.match(css, /\.class-run-row\s*\{[\s\S]*?grid-template-areas:\s*["']class actions["'][\s\S]*?["']profile profile["']/, 'desktop controls must reserve a full-width row for profiles');
+assert.match(css, /\.profile-field\s*\{[\s\S]*?grid-area:\s*profile/, 'profile selector must occupy the full controls row');
+assert.match(css, /\.class-field\s*\{[^}]*grid-area:\s*class/, 'class field must use the compact controls row');
+assert.match(css, /\.run-actions\s*\{[^}]*grid-area:\s*actions/, 'run actions must share the compact controls row');
+assert.match(css, /@media \(max-height:\s*700px\) and \(min-width:\s*821px\)[\s\S]*?\.profile-help-box\s*\{\s*display:\s*none/, 'short desktop viewport must collapse profile help copy');
+assert.match(css, /@media \(max-height:\s*700px\) and \(min-width:\s*821px\)[\s\S]*?\.personal-panel\.active[\s\S]*?grid-template-rows:\s*auto auto minmax\(120px,\s*1fr\) auto/, 'short desktop viewport must preserve usable editor height');
+assert.match(css, /#personalResult\s*\{[^}]*max-height:\s*210px/, 'desktop result must use bounded internal space instead of squeezing editors');
+
 // v2.2 result dashboard.
 assert.match(js, /function formatDuration\(/, 'human duration formatter must exist');
 assert.match(js, /function resultPresentation\(/, 'status-specific presentation must exist');
@@ -66,4 +75,4 @@ assert.match(css, /\.result\.COMPILE_ERROR|\.result-card\.compile-error/, 'compi
 assert.match(js, /function parseExecutionDetails\(/, 'friendly execution parser must exist');
 assert.ok(js.includes('expected:\\s*<(.+?)>\\s*but was:\\s*<(.+?)>'), 'JUnit expected/actual parsing must exist');
 
-console.log('UI_SMOKE_V231_EDITOR_PROFILES_OK');
+console.log('UI_SMOKE_V232_COMPACT_OK');
