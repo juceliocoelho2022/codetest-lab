@@ -7,11 +7,14 @@ public record ExecutionRequest(
         String className,
         String sourceCode,
         byte[] zipBytes,
-        String testCode
+        String testCode,
+        ExecutionProfile executionProfile
 ) {
     public ExecutionRequest {
         className = requireText(className, "className");
         testCode = requireText(testCode, "testCode");
+        executionProfile = executionProfile == null ? ExecutionProfile.defaultProfile() : executionProfile;
+
         boolean hasSource = sourceCode != null && !sourceCode.isBlank();
         boolean hasZip = zipBytes != null && zipBytes.length > 0;
         if (hasSource == hasZip) {
@@ -20,13 +23,36 @@ public record ExecutionRequest(
         zipBytes = zipBytes == null ? null : Arrays.copyOf(zipBytes, zipBytes.length);
     }
 
+    public ExecutionRequest(String className, String sourceCode, byte[] zipBytes, String testCode) {
+        this(className, sourceCode, zipBytes, testCode, ExecutionProfile.defaultProfile());
+    }
+
     public static ExecutionRequest source(String className, String sourceCode, String testCode) {
-        return new ExecutionRequest(className, requireText(sourceCode, "sourceCode"), null, testCode);
+        return source(className, sourceCode, testCode, ExecutionProfile.defaultProfile());
+    }
+
+    public static ExecutionRequest source(String className,
+                                          String sourceCode,
+                                          String testCode,
+                                          ExecutionProfile executionProfile) {
+        return new ExecutionRequest(
+                className,
+                requireText(sourceCode, "sourceCode"),
+                null,
+                testCode,
+                executionProfile);
     }
 
     public static ExecutionRequest zip(String className, byte[] zipBytes, String testCode) {
+        return zip(className, zipBytes, testCode, ExecutionProfile.defaultProfile());
+    }
+
+    public static ExecutionRequest zip(String className,
+                                       byte[] zipBytes,
+                                       String testCode,
+                                       ExecutionProfile executionProfile) {
         Objects.requireNonNull(zipBytes, "zipBytes");
-        return new ExecutionRequest(className, null, zipBytes, testCode);
+        return new ExecutionRequest(className, null, zipBytes, testCode, executionProfile);
     }
 
     public boolean isZip() {
