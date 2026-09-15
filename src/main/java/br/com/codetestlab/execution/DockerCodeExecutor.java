@@ -18,6 +18,7 @@ public class DockerCodeExecutor implements CodeExecutor {
     private final DockerCommandBuilder commandBuilder = new DockerCommandBuilder();
     private final ExecutionOutputParser outputParser = new ExecutionOutputParser();
     private final SurefireReportReader reportReader = new SurefireReportReader();
+    private final JacocoReportReader jacocoReportReader = new JacocoReportReader();
 
     public DockerCodeExecutor(ExecutionProperties properties) {
         this.properties = properties;
@@ -47,7 +48,16 @@ public class DockerCodeExecutor implements CodeExecutor {
 
             reader.join(2_000);
             ExecutionResult parsed = outputParser.parse(process.exitValue(), limited(output.toString()), durationMs);
-            return reportReader.enrich(workspace.resolve("target/surefire-reports"), parsed);
+            ExecutionResult enriched = reportReader.enrich(workspace.resolve("target/surefire-reports"), parsed);
+
+            if (request.executionProfile().jacocoEnabled()
+                    && enriched.status() != ExecutionStatus.COMPILE_ERROR) {
+                enriched = jacocoReportReader.enrich(
+                        workspace.resolve("target/site/jacoco/jacoco.xml"),
+                        enriched);
+            }
+
+            return enriched;
         } catch (IllegalArgumentException e) {
             throw e;
         } catch (IOException e) {
