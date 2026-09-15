@@ -21,7 +21,10 @@ public final class WorkspaceFactory {
 
     public Path create(ExecutionRequest request) throws IOException {
         Path workspace = Files.createTempDirectory("codetest-lab-");
-        Files.writeString(workspace.resolve("pom.xml"), runnerPom(), StandardCharsets.UTF_8);
+        Files.writeString(
+                workspace.resolve("pom.xml"),
+                runnerPom(request.executionProfile()),
+                StandardCharsets.UTF_8);
 
         Path mainRoot = Files.createDirectories(workspace.resolve("src/main/java"));
         Path testRoot = Files.createDirectories(workspace.resolve("src/test/java"));
@@ -64,6 +67,52 @@ public final class WorkspaceFactory {
     }
 
     static String runnerPom() {
+        return runnerPom(ExecutionProfile.defaultProfile());
+    }
+
+    static String runnerPom(ExecutionProfile executionProfile) {
+        ExecutionProfile profile = executionProfile == null
+                ? ExecutionProfile.defaultProfile()
+                : executionProfile;
+
+        String mockitoDependency = profile.mockitoEnabled() ? """
+                        <dependency>
+                            <groupId>org.mockito</groupId>
+                            <artifactId>mockito-junit-jupiter</artifactId>
+                            <version>5.15.2</version>
+                            <scope>test</scope>
+                        </dependency>
+                """ : "";
+
+        String jacocoPlugin = profile.jacocoEnabled() ? """
+                            <plugin>
+                                <groupId>org.jacoco</groupId>
+                                <artifactId>jacoco-maven-plugin</artifactId>
+                                <version>0.8.12</version>
+                                <executions>
+                                    <execution>
+                                        <id>prepare-agent</id>
+                                        <phase>initialize</phase>
+                                        <goals>
+                                            <goal>prepare-agent</goal>
+                                        </goals>
+                                    </execution>
+                                    <execution>
+                                        <id>jacoco-report</id>
+                                        <phase>verify</phase>
+                                        <goals>
+                                            <goal>report</goal>
+                                        </goals>
+                                        <configuration>
+                                            <formats>
+                                                <format>XML</format>
+                                            </formats>
+                                        </configuration>
+                                    </execution>
+                                </executions>
+                            </plugin>
+                """ : "";
+
         return """
                 <?xml version="1.0" encoding="UTF-8"?>
                 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -84,12 +133,7 @@ public final class WorkspaceFactory {
                             <version>5.11.4</version>
                             <scope>test</scope>
                         </dependency>
-                        <dependency>
-                            <groupId>org.mockito</groupId>
-                            <artifactId>mockito-junit-jupiter</artifactId>
-                            <version>5.15.2</version>
-                            <scope>test</scope>
-                        </dependency>
+                %s
                     </dependencies>
                     <build>
                         <plugins>
@@ -102,9 +146,10 @@ public final class WorkspaceFactory {
                                     <trimStackTrace>false</trimStackTrace>
                                 </configuration>
                             </plugin>
+                %s
                         </plugins>
                     </build>
                 </project>
-                """;
+                """.formatted(mockitoDependency, jacocoPlugin);
     }
 }
