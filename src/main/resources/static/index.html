@@ -13,6 +13,7 @@
     })();
   </script>
   <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/student-editor.css">
 </head>
 <body>
 <header class="hero">
@@ -22,7 +23,7 @@
     <p>Teste código Java no modo pessoal ou crie exercícios com testes ocultos para seus alunos.</p>
   </div>
   <div class="hero-actions">
-    <div class="badge">MVP 0.3.2</div>
+    <div class="badge">MVP 0.3.3</div>
     <button id="themeToggle" class="theme-toggle" type="button" aria-label="Alternar tema" title="Alternar tema">
       <span id="themeIcon" aria-hidden="true">🌙</span>
       <span id="themeLabel">Escuro</span>
@@ -207,25 +208,41 @@ class CalculadoraTest {
         </div>
       </div>
 
-      <label>Nome do aluno<input id="studentName" value="Aluno 01" maxlength="120"></label>
-      <div class="submission-grid">
-        <div>
-          <label>Solução por código
-            <textarea id="studentSource" spellcheck="false">public class Calculadora {
+      <div class="student-meta-row">
+        <label>Nome do aluno
+          <input id="studentName" value="Aluno 01" maxlength="120">
+        </label>
+      </div>
+
+      <div class="student-code-area">
+        <div class="student-code-heading">
+          <strong>Solução Java</strong>
+          <span>JAVA 21</span>
+        </div>
+
+        <div class="student-code-editor code-editor" data-editor="student-source">
+          <div id="studentSourceLines" class="line-gutter" aria-hidden="true"></div>
+          <textarea id="studentSource" spellcheck="false" wrap="off">public class Calculadora {
     public int somar(int a, int b) {
         return a + b;
     }
 }</textarea>
-          </label>
-          <button id="submitSource" class="primary full">Enviar código</button>
         </div>
-        <div class="upload-box">
-          <h3>Ou envie um projeto .zip</h3>
-          <p>O ZIP deve conter seus arquivos em <code>src/main/java</code>. O POM enviado é ignorado por segurança.</p>
-          <input id="zipFile" type="file" accept=".zip,application/zip">
-          <button id="submitZip" class="secondary full">Enviar ZIP</button>
+
+        <div class="student-code-actions">
+          <button id="submitSource" class="primary" type="button">▶ Enviar código</button>
         </div>
       </div>
+
+      <div class="student-upload-row">
+        <div class="student-upload-copy">
+          <h3>Projeto completo (.zip)</h3>
+          <p>Envie arquivos em <code>src/main/java</code>. O POM do aluno é ignorado por segurança.</p>
+        </div>
+        <input id="zipFile" type="file" accept=".zip,application/zip">
+        <button id="submitZip" class="secondary" type="button">Enviar ZIP</button>
+      </div>
+
       <div id="submissionResult" class="result empty" aria-live="polite">A execução da submissão aparecerá aqui.</div>
     </article>
 
@@ -244,5 +261,8 @@ class CalculadoraTest {
   <span>Execução isolada via Docker</span>
 </footer>
 <script src="/app.js"></script>
+<script>
+  setupNumberedEditor('studentSource', 'studentSourceLines');
+</script>
 </body>
 </html>
