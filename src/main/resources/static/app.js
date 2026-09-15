@@ -6,6 +6,15 @@ const themeToggle = $('themeToggle');
 const themeIcon = $('themeIcon');
 const themeLabel = $('themeLabel');
 const runPersonalButton = $('runPersonal');
+const executionProfile = $('executionProfile');
+const profileHelp = $('profileHelp');
+
+const PROFILE_HELP = {
+  JUNIT5: 'JUnit 5 executa os testes sem bibliotecas adicionais de mock ou cobertura.',
+  JUNIT5_MOCKITO: 'JUnit 5 executa testes; Mockito habilita mocks de dependências.',
+  JUNIT5_JACOCO: 'JUnit 5 executa testes; JaCoCo mede a cobertura do código.',
+  JUNIT5_MOCKITO_JACOCO: 'JUnit 5 + mocks com Mockito + cobertura de código com JaCoCo.'
+};
 
 function applyTheme(theme, persist = false) {
   const nextTheme = theme === 'light' ? 'light' : 'dark';
@@ -30,6 +39,13 @@ themeToggle.addEventListener('click', () => {
   const current = document.documentElement.dataset.theme;
   applyTheme(current === 'dark' ? 'light' : 'dark', true);
 });
+
+function updateProfileHelp() {
+  profileHelp.textContent = PROFILE_HELP[executionProfile.value] || PROFILE_HELP.JUNIT5_MOCKITO;
+}
+
+executionProfile.addEventListener('change', updateProfileHelp);
+updateProfileHelp();
 
 for (const tab of document.querySelectorAll('.tab')) {
   tab.addEventListener('click', () => {
@@ -76,60 +92,214 @@ function parseExecutionDetails(output = '') {
   return details;
 }
 
-function friendlyMessage(result, details) {
+function formatDuration(durationMs) {
+  const value = Number(durationMs) || 0;
+  if (value < 1000) return `${Math.max(0, Math.round(value))} ms`;
+  return `${(value / 1000).toLocaleString('pt-BR', {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1
+  })} s`;
+}
+
+function resultPresentation(result) {
   switch (result.status) {
     case 'PASSED':
-      return 'Todos os testes foram concluídos com sucesso.';
+      return {
+        icon: '✓',
+        title: 'TODOS OS TESTES PASSARAM',
+        tone: 'passed',
+        message: 'Todos os testes foram concluídos com sucesso.'
+      };
     case 'FAILED':
-      if (details.expected !== undefined && details.actual !== undefined) {
-        return 'O teste executou, mas o resultado obtido foi diferente do esperado.';
-      }
-      return 'O código compilou, mas pelo menos um teste falhou.';
+      return {
+        icon: '×',
+        title: result.testsFailed === 1 ? 'TESTE FALHOU' : 'TESTES FALHARAM',
+        tone: 'failed',
+        message: 'O código compilou, mas pelo menos um teste encontrou um resultado incorreto.'
+      };
     case 'COMPILE_ERROR':
-      return details.compileMessage
-        ? `O código não compilou: ${details.compileMessage}`
-        : 'O código Java contém um erro de compilação.';
+      return {
+        icon: '!',
+        title: 'ERRO DE COMPILAÇÃO',
+        tone: 'compile-error',
+        message: 'O código Java não pôde ser compilado.'
+      };
     case 'TIMEOUT':
-      return 'A execução ultrapassou o tempo limite permitido.';
+      return {
+        icon: '⏱',
+        title: 'TEMPO LIMITE EXCEDIDO',
+        tone: 'timeout',
+        message: 'A execução ultrapassou o tempo limite permitido.'
+      };
     case 'INFRASTRUCTURE_ERROR':
-      return 'O ambiente de execução encontrou um problema de infraestrutura.';
+      return {
+        icon: '!',
+        title: 'ERRO DE INFRAESTRUTURA',
+        tone: 'infrastructure-error',
+        message: 'O ambiente de execução encontrou um problema de infraestrutura.'
+      };
     default:
-      return 'A execução foi concluída. Consulte os detalhes abaixo.';
+      return {
+        icon: '•',
+        title: result.status || 'RESULTADO',
+        tone: 'unknown',
+        message: 'A execução foi concluída. Consulte os detalhes abaixo.'
+      };
   }
 }
 
-function appendMetric(container, value) {
-  const metric = document.createElement('span');
-  metric.className = 'metric';
-  metric.textContent = value;
+function appendMetric(container, label, value, modifier = '') {
+  const metric = document.createElement('div');
+  metric.className = `result-metric ${modifier}`.trim();
+
+  const metricValue = document.createElement('strong');
+  metricValue.textContent = value;
+
+  const metricLabel = document.createElement('span');
+  metricLabel.textContent = label;
+
+  metric.append(metricValue, metricLabel);
   container.appendChild(metric);
+}
+
+function appendTestMetrics(container, result) {
+  if (result.status !== 'COMPILE_ERROR' && result.testsRun > 0) {
+    const metrics = document.createElement('div');
+    metrics.className = 'result-metrics';
+    appendMetric(metrics, result.testsRun === 1 ? 'executado' : 'executados', result.testsRun);
+    appendMetric(metrics, result.testsPassed === 1 ? 'aprovado' : 'aprovados', result.testsPassed, 'success');
+    appendMetric(metrics, result.testsFailed === 1 ? 'falha' : 'falhas', result.testsFailed,
+      result.testsFailed > 0 ? 'danger' : '');
+    if (result.testsSkipped > 0) {
+      appendMetric(metrics, result.testsSkipped === 1 ? 'ignorado' : 'ignorados', result.testsSkipped);
+    }
+    container.appendChild(metrics);
+  }
 }
 
 function appendFriendlyDetails(container, result, details) {
   const rows = [];
-  if (details.expected !== undefined) rows.push(['Esperado', details.expected]);
-  if (details.actual !== undefined) rows.push(['Obtido', details.actual]);
-  if (details.test) rows.push(['Teste', details.test]);
-  if (details.file) rows.push(['Arquivo', details.file]);
-  if (details.line) rows.push(['Linha', details.line]);
-  if (details.column) rows.push(['Coluna', details.column]);
+
+  if (result.status === 'FAILED') {
+    if (details.expected !== undefined) rows.push(['Esperado', details.expected]);
+    if (details.actual !== undefined) rows.push(['Obtido', details.actual]);
+    if (details.test) rows.push(['Teste', details.test]);
+    if (details.line) rows.push(['Linha', details.line]);
+  }
+
+  if (result.status === 'COMPILE_ERROR') {
+    if (details.file) rows.push(['Arquivo', details.file]);
+    if (details.line) rows.push(['Linha', details.line]);
+    if (details.column) rows.push(['Coluna', details.column]);
+    if (details.compileMessage) rows.push(['Problema', details.compileMessage]);
+  }
 
   if (rows.length === 0) return;
 
-  const grid = document.createElement('div');
-  grid.className = 'friendly-grid';
+  const list = document.createElement('div');
+  list.className = 'diagnostic-list';
+
   for (const [label, value] of rows) {
-    const item = document.createElement('div');
-    item.className = 'friendly-item';
+    const row = document.createElement('div');
+    row.className = 'diagnostic-row';
+
     const key = document.createElement('span');
-    key.className = 'friendly-key';
+    key.className = 'diagnostic-key';
     key.textContent = label;
+
     const val = document.createElement('strong');
+    val.className = 'diagnostic-value';
     val.textContent = value;
-    item.append(key, val);
+
+    row.append(key, val);
+    list.appendChild(row);
+  }
+
+  container.appendChild(list);
+}
+
+function appendGuidance(container, result, details) {
+  if (result.status !== 'COMPILE_ERROR') return;
+
+  const guidance = document.createElement('div');
+  guidance.className = 'result-guidance';
+  guidance.textContent = details.line
+    ? `Verifique a instrução próxima à linha ${details.line}.`
+    : 'Revise a sintaxe Java indicada na mensagem do compilador.';
+  container.appendChild(guidance);
+}
+
+function coverageValue(value) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return null;
+  return Math.min(100, Math.max(0, Number(value)));
+}
+
+function formatCoverage(value) {
+  const normalized = coverageValue(value);
+  if (normalized === null) return '—';
+  const rounded = Math.round(normalized * 10) / 10;
+  return Number.isInteger(rounded) ? `${rounded}%` : `${rounded.toLocaleString('pt-BR')}%`;
+}
+
+function appendCoverage(container, coverage) {
+  if (!coverage) return;
+
+  const definitions = [
+    ['Linhas', coverage.linePercent],
+    ['Métodos', coverage.methodPercent],
+    ['Branches', coverage.branchPercent],
+    ['Classes', coverage.classPercent]
+  ];
+
+  if (!definitions.some(([, value]) => coverageValue(value) !== null)) return;
+
+  const section = document.createElement('section');
+  section.className = 'coverage-section';
+
+  const heading = document.createElement('div');
+  heading.className = 'coverage-heading';
+  heading.innerHTML = '<div><span class="coverage-kicker">JACOCO</span><h3>Cobertura de código</h3></div>';
+
+  const note = document.createElement('p');
+  note.className = 'coverage-note';
+  note.textContent = 'Cobertura indica o código executado pelos testes; não garante, sozinha, a qualidade dos testes.';
+  heading.appendChild(note);
+
+  const grid = document.createElement('div');
+  grid.className = 'coverage-grid';
+
+  for (const [label, rawValue] of definitions) {
+    const value = coverageValue(rawValue);
+    const item = document.createElement('div');
+    item.className = 'coverage-item';
+
+    const meta = document.createElement('div');
+    meta.className = 'coverage-meta';
+    const name = document.createElement('span');
+    name.textContent = label;
+    const percent = document.createElement('strong');
+    percent.textContent = formatCoverage(rawValue);
+    meta.append(name, percent);
+
+    const track = document.createElement('div');
+    track.className = 'coverage-bar';
+    track.setAttribute('role', 'progressbar');
+    track.setAttribute('aria-label', `Cobertura de ${label}`);
+    track.setAttribute('aria-valuemin', '0');
+    track.setAttribute('aria-valuemax', '100');
+    if (value !== null) track.setAttribute('aria-valuenow', String(value));
+
+    const fill = document.createElement('span');
+    fill.className = 'coverage-fill';
+    fill.style.width = value === null ? '0%' : `${value}%`;
+    track.appendChild(fill);
+
+    item.append(meta, track);
     grid.appendChild(item);
   }
-  container.appendChild(grid);
+
+  section.append(heading, grid);
+  container.appendChild(section);
 }
 
 function appendTechnicalDetails(container, output) {
@@ -138,67 +308,96 @@ function appendTechnicalDetails(container, output) {
 
   const details = document.createElement('details');
   details.className = 'result-details';
+
   const summary = document.createElement('summary');
   summary.textContent = 'Ver detalhes técnicos';
+
   const pre = document.createElement('pre');
   pre.className = 'execution-output';
   pre.textContent = normalized;
+
   details.append(summary, pre);
   container.appendChild(details);
 }
 
 function renderExecution(target, result) {
-  target.classList.remove('empty');
+  const parsed = parseExecutionDetails(result.output || '');
+  const presentation = resultPresentation(result);
+
+  target.className = `result result-card ${presentation.tone}`;
   target.innerHTML = '';
 
-  const parsed = parseExecutionDetails(result.output || '');
+  const top = document.createElement('div');
+  top.className = 'result-top';
 
-  const header = document.createElement('div');
-  header.className = 'result-header';
+  const statusBlock = document.createElement('div');
+  statusBlock.className = 'result-status-block';
 
-  const status = document.createElement('span');
-  status.className = `status ${result.status}`;
-  status.textContent = result.status;
+  const icon = document.createElement('span');
+  icon.className = 'result-status-icon';
+  icon.textContent = presentation.icon;
+  icon.setAttribute('aria-hidden', 'true');
 
-  const summary = document.createElement('div');
-  summary.className = 'execution-summary';
-  appendMetric(summary, `${result.testsPassed}/${result.testsRun} testes`);
-  if (result.testsFailed > 0) appendMetric(summary, `${result.testsFailed} falharam`);
-  if (result.testsSkipped > 0) appendMetric(summary, `${result.testsSkipped} ignorados`);
-  appendMetric(summary, `${result.durationMs} ms`);
+  const titleGroup = document.createElement('div');
+  const code = document.createElement('span');
+  code.className = 'result-status-code';
+  code.textContent = result.status;
+  const title = document.createElement('h3');
+  title.className = 'result-status-title';
+  title.textContent = presentation.title;
+  titleGroup.append(code, title);
 
-  header.append(status, summary);
+  statusBlock.append(icon, titleGroup);
 
-  const message = document.createElement('div');
+  const duration = document.createElement('div');
+  duration.className = 'result-duration';
+  duration.innerHTML = `<span>Duração</span><strong>${formatDuration(result.durationMs)}</strong>`;
+
+  top.append(statusBlock, duration);
+
+  const message = document.createElement('p');
   message.className = 'result-message';
-  message.textContent = friendlyMessage(result, parsed);
+  if (result.status === 'FAILED' && parsed.expected !== undefined && parsed.actual !== undefined) {
+    message.textContent = 'O teste executou, mas o resultado obtido foi diferente do esperado.';
+  } else if (result.status === 'COMPILE_ERROR' && parsed.compileMessage) {
+    message.textContent = `O código não compilou: ${parsed.compileMessage}`;
+  } else {
+    message.textContent = presentation.message;
+  }
 
-  target.append(header, message);
+  target.append(top, message);
+  appendTestMetrics(target, result);
   appendFriendlyDetails(target, result, parsed);
+  appendGuidance(target, result, parsed);
+
+  if (result.status !== 'COMPILE_ERROR' && result.coverage) {
+    appendCoverage(target, result.coverage);
+  }
+
   appendTechnicalDetails(target, result.output);
 }
 
 function renderError(target, error) {
-  target.classList.remove('empty');
+  target.className = 'result result-card infrastructure-error';
   target.innerHTML = '';
 
-  const status = document.createElement('span');
-  status.className = 'status FAILED';
-  status.textContent = 'ERRO';
+  const top = document.createElement('div');
+  top.className = 'result-top';
+  top.innerHTML = `
+    <div class="result-status-block">
+      <span class="result-status-icon" aria-hidden="true">!</span>
+      <div>
+        <span class="result-status-code">ERRO</span>
+        <h3 class="result-status-title">NÃO FOI POSSÍVEL EXECUTAR</h3>
+      </div>
+    </div>`;
 
-  const message = document.createElement('div');
+  const message = document.createElement('p');
   message.className = 'result-message';
   message.textContent = 'Não foi possível concluir a solicitação.';
 
-  const details = document.createElement('details');
-  details.className = 'result-details';
-  const summary = document.createElement('summary');
-  summary.textContent = 'Ver detalhes técnicos';
-  const pre = document.createElement('pre');
-  pre.textContent = error.message;
-  details.append(summary, pre);
-
-  target.append(status, message, details);
+  target.append(top, message);
+  appendTechnicalDetails(target, error.message);
 }
 
 function resetPersonalResult() {
@@ -209,7 +408,7 @@ function resetPersonalResult() {
 
 async function runPersonalTests() {
   const target = $('personalResult');
-  target.classList.add('empty');
+  target.className = 'result empty running';
   target.textContent = 'Executando testes...';
   runPersonalButton.disabled = true;
   runPersonalButton.textContent = 'Executando...';
@@ -221,7 +420,8 @@ async function runPersonalTests() {
       body: JSON.stringify({
         className: $('personalClassName').value,
         sourceCode: $('personalSource').value,
-        testCode: $('personalTest').value
+        testCode: $('personalTest').value,
+        executionProfile: $('executionProfile').value
       })
     });
     renderExecution(target, result);
@@ -301,6 +501,7 @@ function selectExercise(exercise, item) {
 $('submitSource').addEventListener('click', async () => {
   if (!selectedExercise) return;
   const target = $('submissionResult');
+  target.className = 'result empty running';
   target.textContent = 'Executando submissão...';
   try {
     const result = await api(`/api/v1/exercises/${selectedExercise.id}/submissions/source`, {
@@ -321,6 +522,7 @@ $('submitZip').addEventListener('click', async () => {
   form.append('studentName', $('studentName').value);
   form.append('file', file);
   const target = $('submissionResult');
+  target.className = 'result empty running';
   target.textContent = 'Enviando e executando ZIP...';
   try {
     const result = await api(`/api/v1/exercises/${selectedExercise.id}/submissions/zip`, {method: 'POST', body: form});
@@ -351,7 +553,7 @@ async function loadHistory() {
       cells[1].textContent = item.submissionType;
       cells[2].innerHTML = `<span class="status ${item.status}">${item.status}</span>`;
       cells[3].textContent = `${item.testsPassed}/${item.testsRun}`;
-      cells[4].textContent = `${item.durationMs} ms`;
+      cells[4].textContent = formatDuration(item.durationMs);
       cells[5].textContent = new Date(item.createdAt).toLocaleString('pt-BR');
       body.appendChild(row);
     }
