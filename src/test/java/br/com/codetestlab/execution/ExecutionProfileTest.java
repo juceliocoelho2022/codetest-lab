@@ -2,6 +2,7 @@ package br.com.codetestlab.execution;
 
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -22,6 +23,24 @@ class ExecutionProfileTest {
 
         assertTrue(ExecutionProfile.JUNIT5_MOCKITO_JACOCO.mockitoEnabled());
         assertTrue(ExecutionProfile.JUNIT5_MOCKITO_JACOCO.jacocoEnabled());
+    }
+
+    @Test
+    void shouldKeepBaseTimeoutForProfilesWithoutJacoco() {
+        assertEquals(20, ExecutionProfile.JUNIT5.timeoutSeconds(20));
+        assertEquals(20, ExecutionProfile.JUNIT5_MOCKITO.timeoutSeconds(20));
+    }
+
+    @Test
+    void shouldAllowFortySecondsForProfilesWithJacoco() {
+        assertEquals(40, ExecutionProfile.JUNIT5_JACOCO.timeoutSeconds(20));
+        assertEquals(40, ExecutionProfile.JUNIT5_MOCKITO_JACOCO.timeoutSeconds(20));
+    }
+
+    @Test
+    void shouldRespectHigherConfiguredTimeoutForJacocoProfiles() {
+        assertEquals(60, ExecutionProfile.JUNIT5_JACOCO.timeoutSeconds(60));
+        assertEquals(60, ExecutionProfile.JUNIT5_MOCKITO_JACOCO.timeoutSeconds(60));
     }
 
     @Test
