@@ -6,6 +6,10 @@ import jakarta.validation.constraints.Size;
 public record PlaygroundRunRequest(
         @NotBlank @Size(max = 180) String className,
         @NotBlank @Size(max = 100_000) String sourceCode,
-        @NotBlank @Size(max = 100_000) String testCode
+        @NotBlank @Size(max = 100_000) String testCode,
+        @Size(max = 80) String executionProfile
 ) {
+    public PlaygroundRunRequest(String className, String sourceCode, String testCode) {
+        this(className, sourceCode, testCode, null);
+    }
 }
