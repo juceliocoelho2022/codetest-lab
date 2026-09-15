@@ -1,0 +1,131 @@
+.student-meta-row {
+  display: grid;
+  grid-template-columns: minmax(260px, 420px) 1fr;
+  gap: 14px;
+  align-items: end;
+  margin-bottom: 8px;
+}
+
+.student-meta-row label {
+  margin: 0;
+}
+
+.student-code-area {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.student-code-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.student-code-heading strong {
+  color: var(--label);
+  font-size: .84rem;
+}
+
+.student-code-heading span {
+  color: var(--muted);
+  font-size: .62rem;
+  font-weight: 850;
+  letter-spacing: .08em;
+}
+
+.student-code-editor {
+  min-height: 340px;
+  height: clamp(340px, 48vh, 520px);
+  grid-template-columns: 50px minmax(0, 1fr);
+  border-radius: 12px;
+}
+
+.student-code-editor .line-gutter {
+  font-size: .86rem;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.student-code-editor textarea {
+  min-height: 340px;
+  height: 100%;
+  padding: 12px 14px;
+  font-size: .86rem;
+  line-height: 1.55;
+}
+
+.student-code-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 9px;
+}
+
+.student-code-actions .primary {
+  min-width: 190px;
+}
+
+.student-upload-row {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(230px, .8fr) auto;
+  gap: 12px;
+  align-items: center;
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  background: var(--surface-3);
+}
+
+.student-upload-copy h3 {
+  margin: 0 0 3px;
+  font-size: .84rem;
+}
+
+.student-upload-copy p {
+  margin: 0;
+  font-size: .7rem;
+  line-height: 1.35;
+}
+
+.student-upload-row input[type="file"] {
+  min-width: 0;
+  padding: 7px 9px;
+  background: var(--surface);
+}
+
+.student-upload-row .secondary {
+  white-space: nowrap;
+}
+
+#submissionArea #submissionResult {
+  margin-top: 14px;
+}
+
+@media (max-width: 900px) {
+  .student-meta-row {
+    grid-template-columns: 1fr;
+  }
+
+  .student-upload-row {
+    grid-template-columns: 1fr;
+  }
+
+  .student-upload-row .secondary,
+  .student-code-actions .primary {
+    width: 100%;
+  }
+}
+
+@media (max-width: 820px) {
+  .student-code-editor {
+    min-height: 300px;
+    height: 52vh;
+  }
+
+  .student-code-editor textarea {
+    min-height: 300px;
+  }
+}
