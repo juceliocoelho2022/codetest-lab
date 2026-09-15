@@ -22,7 +22,7 @@
     <p>Teste código Java no modo pessoal ou crie exercícios com testes ocultos para seus alunos.</p>
   </div>
   <div class="hero-actions">
-    <div class="badge">MVP 0.3.1</div>
+    <div class="badge">MVP 0.3.2</div>
     <button id="themeToggle" class="theme-toggle" type="button" aria-label="Alternar tema" title="Alternar tema">
       <span id="themeIcon" aria-hidden="true">🌙</span>
       <span id="themeLabel">Escuro</span>
@@ -50,61 +50,70 @@
         <input id="personalClassName" value="Calculadora" maxlength="180">
       </label>
 
-      <div class="profile-field">
-        <div class="profile-heading-row">
-          <div>
-            <span class="profile-label">Perfil de execução</span>
-            <span class="profile-caption">Combine testes, mocks e cobertura conforme o cenário.</span>
-          </div>
-          <span class="profile-current">Ativo: <strong id="profileHelpTitle">JUnit 5 + Mockito</strong></span>
-        </div>
+      <details id="profileDropdown" class="profile-dropdown">
+        <summary id="profileDropdownToggle" class="profile-summary">
+          <span class="profile-summary-copy">
+            <small>Perfil de testes</small>
+            <strong id="profileHelpTitle">JUnit 5 + Mockito</strong>
+          </span>
+          <span class="profile-summary-arrow" aria-hidden="true">▾</span>
+        </summary>
 
         <input id="executionProfile" type="hidden" value="JUNIT5_MOCKITO">
 
-        <div class="profile-cards" role="radiogroup" aria-label="Perfil de execução">
-          <button class="profile-card" type="button" role="radio" aria-checked="false" data-profile="JUNIT5">
-            <span class="profile-card-code">J5</span>
-            <span class="profile-card-copy">
-              <strong>JUnit 5</strong>
-              <small>Testes base</small>
-            </span>
-            <span class="profile-card-check" aria-hidden="true">✓</span>
-          </button>
+        <div class="profile-popover">
+          <div class="profile-popover-heading">
+            <div>
+              <span class="profile-label">Escolha o perfil</span>
+              <span class="profile-caption">JUnit executa testes; Mockito cria mocks; JaCoCo mede cobertura.</span>
+            </div>
+          </div>
 
-          <button class="profile-card active" type="button" role="radio" aria-checked="true" data-profile="JUNIT5_MOCKITO">
-            <span class="profile-card-code">JM</span>
-            <span class="profile-card-copy">
-              <strong>JUnit + Mockito</strong>
-              <small>Testes + Mocks</small>
-            </span>
-            <span class="profile-card-check" aria-hidden="true">✓</span>
-          </button>
+          <div class="profile-cards" role="radiogroup" aria-label="Perfil de execução">
+            <button class="profile-card" type="button" role="radio" aria-checked="false" data-profile="JUNIT5" onclick="this.closest('details').removeAttribute('open')">
+              <span class="profile-card-code">J5</span>
+              <span class="profile-card-copy">
+                <strong>JUnit 5</strong>
+                <small>Testes unitários</small>
+              </span>
+              <span class="profile-card-check" aria-hidden="true">✓</span>
+            </button>
 
-          <button class="profile-card" type="button" role="radio" aria-checked="false" data-profile="JUNIT5_JACOCO">
-            <span class="profile-card-code">JC</span>
-            <span class="profile-card-copy">
-              <strong>JUnit + JaCoCo</strong>
-              <small>Testes + Coverage</small>
-            </span>
-            <span class="profile-card-check" aria-hidden="true">✓</span>
-          </button>
+            <button class="profile-card active" type="button" role="radio" aria-checked="true" data-profile="JUNIT5_MOCKITO" onclick="this.closest('details').removeAttribute('open')">
+              <span class="profile-card-code">JM</span>
+              <span class="profile-card-copy">
+                <strong>JUnit 5 + Mockito</strong>
+                <small>Testes + mocks</small>
+              </span>
+              <span class="profile-card-check" aria-hidden="true">✓</span>
+            </button>
 
-          <button class="profile-card" type="button" role="radio" aria-checked="false" data-profile="JUNIT5_MOCKITO_JACOCO">
-            <span class="profile-card-code">ALL</span>
-            <span class="profile-card-copy">
-              <strong>Stack completa</strong>
-              <small>Testes + Mocks + Coverage</small>
-            </span>
-            <span class="profile-card-check" aria-hidden="true">✓</span>
-          </button>
+            <button class="profile-card" type="button" role="radio" aria-checked="false" data-profile="JUNIT5_JACOCO" onclick="this.closest('details').removeAttribute('open')">
+              <span class="profile-card-code">JC</span>
+              <span class="profile-card-copy">
+                <strong>JUnit 5 + JaCoCo</strong>
+                <small>Testes + cobertura</small>
+              </span>
+              <span class="profile-card-check" aria-hidden="true">✓</span>
+            </button>
+
+            <button class="profile-card" type="button" role="radio" aria-checked="false" data-profile="JUNIT5_MOCKITO_JACOCO" onclick="this.closest('details').removeAttribute('open')">
+              <span class="profile-card-code">ALL</span>
+              <span class="profile-card-copy">
+                <strong>JUnit + Mockito + JaCoCo</strong>
+                <small>Testes + mocks + cobertura</small>
+              </span>
+              <span class="profile-card-check" aria-hidden="true">✓</span>
+            </button>
+          </div>
+
+          <div class="profile-help-box">
+            <span class="profile-help-mark" aria-hidden="true">i</span>
+            <span id="profileHelp">Execute testes unitários e isole dependências com mocks, stubs e verificações.</span>
+            <span id="profileHelpTags" class="profile-help-tags" aria-label="Recursos do perfil"></span>
+          </div>
         </div>
-
-        <div class="profile-help-box">
-          <span class="profile-help-mark" aria-hidden="true">i</span>
-          <span id="profileHelp">Execute testes unitários e isole dependências com mocks, stubs e verificações.</span>
-          <span id="profileHelpTags" class="profile-help-tags" aria-label="Recursos do perfil"></span>
-        </div>
-      </div>
+      </details>
 
       <div class="run-actions">
         <button id="clearPersonalResult" class="ghost" type="button">Limpar resultado</button>
