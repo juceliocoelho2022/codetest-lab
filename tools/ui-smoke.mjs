@@ -3,7 +3,11 @@ import assert from 'node:assert/strict';
 
 const html = fs.readFileSync('src/main/resources/static/index.html', 'utf8');
 const css = fs.readFileSync('src/main/resources/static/styles.css', 'utf8');
+const studentCss = fs.existsSync('src/main/resources/static/student-editor.css')
+  ? fs.readFileSync('src/main/resources/static/student-editor.css', 'utf8')
+  : '';
 const js = fs.readFileSync('src/main/resources/static/app.js', 'utf8');
+const frontendCode = `${html}\n${js}`;
 
 // Theme and viewport behavior.
 assert.match(html, /id="themeToggle"/, 'theme toggle button must exist');
@@ -46,13 +50,14 @@ assert.match(css, /\.line-gutter/, 'line gutter styling must exist');
 assert.match(css, /\.line-number\.error-line/, 'error line styling must exist');
 
 // Student submission editor: large, full-width and numbered.
+assert.match(html, /student-editor\.css/, 'student editor stylesheet must be loaded');
 assert.match(html, /id="studentSourceLines"/, 'student Java editor line gutter must exist');
 assert.match(html, /class="student-code-area"/, 'student solution must use a dedicated full-width editor area');
 assert.match(html, /class="student-code-editor/, 'student solution must use the numbered editor shell');
-assert.match(js, /setupNumberedEditor\(['"]studentSource['"],\s*['"]studentSourceLines['"]\)/, 'student editor must initialize line numbers');
-assert.match(css, /\.student-code-area\s*\{[\s\S]*?grid-column:\s*1\s*\/\s*-1/, 'student editor must span the full submission width');
-assert.match(css, /\.student-code-editor\s*\{[\s\S]*?min-height:\s*340px/, 'student editor must be substantially taller on desktop');
-assert.match(css, /\.student-upload-row\s*\{[\s\S]*?display:\s*grid/, 'ZIP upload must become a secondary row');
+assert.match(frontendCode, /setupNumberedEditor\(['"]studentSource['"],\s*['"]studentSourceLines['"]\)/, 'student editor must initialize line numbers');
+assert.match(studentCss, /\.student-code-area\s*\{[\s\S]*?grid-column:\s*1\s*\/\s*-1/, 'student editor must span the full submission width');
+assert.match(studentCss, /\.student-code-editor\s*\{[\s\S]*?min-height:\s*340px/, 'student editor must be substantially taller on desktop');
+assert.match(studentCss, /\.student-upload-row\s*\{[\s\S]*?display:\s*grid/, 'ZIP upload must become a secondary row');
 
 // Regression: controls must stay compact and editors must dominate the viewport.
 assert.match(css, /\.class-run-row\s*\{[\s\S]*?grid-template-columns:\s*minmax\(180px,[^;]+\)\s+minmax\(240px,[^;]+\)\s+auto/, 'desktop controls must fit class, profile chooser and actions in one row');
