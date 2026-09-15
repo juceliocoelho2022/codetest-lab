@@ -22,10 +22,10 @@
     <p>Teste código Java no modo pessoal ou crie exercícios com testes ocultos para seus alunos.</p>
   </div>
   <div class="hero-actions">
-    <div class="badge">MVP 0.2</div>
+    <div class="badge">MVP 0.2.1</div>
     <button id="themeToggle" class="theme-toggle" type="button" aria-label="Alternar tema" title="Alternar tema">
-      <span id="themeIcon" aria-hidden="true">☀️</span>
-      <span id="themeLabel">Light</span>
+      <span id="themeIcon" aria-hidden="true">🌙</span>
+      <span id="themeLabel">Escuro</span>
     </button>
   </div>
 </header>
@@ -42,12 +42,18 @@
         <h2>Playground de testes</h2>
         <p>Cole uma classe Java e o teste JUnit que deseja executar.</p>
       </div>
-      <button id="runPersonal" class="primary run-button">Executar testes</button>
+      <div class="shortcut-hint"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> para executar</div>
     </div>
 
-    <label class="class-field">Nome da classe
-      <input id="personalClassName" value="Calculadora" maxlength="180">
-    </label>
+    <div class="class-run-row">
+      <label class="class-field">Nome da classe
+        <input id="personalClassName" value="Calculadora" maxlength="180">
+      </label>
+      <div class="run-actions">
+        <button id="clearPersonalResult" class="ghost" type="button">Limpar resultado</button>
+        <button id="runPersonal" class="primary run-button" type="button">▶ Executar testes</button>
+      </div>
+    </div>
 
     <div class="editor-grid">
       <label class="editor-field">Código Java
@@ -70,7 +76,7 @@ class CalculadoraTest {
       </label>
     </div>
 
-    <div id="personalResult" class="result empty">O resultado aparecerá aqui.</div>
+    <div id="personalResult" class="result empty" aria-live="polite">O resultado aparecerá aqui.</div>
   </section>
 
   <section id="teacher" class="panel teacher-panel">
@@ -139,7 +145,7 @@ class CalculadoraTest {
           <button id="submitZip" class="secondary full">Enviar ZIP</button>
         </div>
       </div>
-      <div id="submissionResult" class="result empty">A execução da submissão aparecerá aqui.</div>
+      <div id="submissionResult" class="result empty" aria-live="polite">A execução da submissão aparecerá aqui.</div>
     </article>
 
     <article id="historyCard" class="card hidden">
