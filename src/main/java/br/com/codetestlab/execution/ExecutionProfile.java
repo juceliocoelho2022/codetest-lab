@@ -10,6 +10,8 @@ public enum ExecutionProfile {
     JUNIT5_JACOCO(false, true),
     JUNIT5_MOCKITO_JACOCO(true, true);
 
+    private static final int JACOCO_MIN_TIMEOUT_SECONDS = 40;
+
     private final boolean mockitoEnabled;
     private final boolean jacocoEnabled;
 
@@ -24,6 +26,12 @@ public enum ExecutionProfile {
 
     public boolean jacocoEnabled() {
         return jacocoEnabled;
+    }
+
+    public int timeoutSeconds(int configuredTimeoutSeconds) {
+        return jacocoEnabled
+                ? Math.max(configuredTimeoutSeconds, JACOCO_MIN_TIMEOUT_SECONDS)
+                : configuredTimeoutSeconds;
     }
 
     public static ExecutionProfile defaultProfile() {
