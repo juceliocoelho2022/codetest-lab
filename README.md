@@ -212,3 +212,17 @@ Há testes de:
 5. IA para explicar falhas e sugerir estudos.
 6. Ranking/turma e exportação de resultados.
 7. Runners Python e JavaScript.
+
+## Estrutura
+
+```text
+codetest-lab/
+├── runner/                     # imagem Docker que executa JUnit
+├── src/main/java/              # backend Spring Boot
+├── src/main/resources/static/  # interface web
+├── src/test/java/              # JUnit + Mockito
+├── tools/                      # smoke test sem dependências externas
+├── docs/superpowers/           # design e plano do MVP
+├── docker-compose.yml          # PostgreSQL opcional
+└── pom.xml
+```

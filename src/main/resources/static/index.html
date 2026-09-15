@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CodeTest Lab</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<header class="hero">
+  <div>
+    <p class="eyebrow">JAVA 21 • JUNIT 5 • MOCKITO • DOCKER</p>
+    <h1>CodeTest Lab</h1>
+    <p>Teste código Java no modo pessoal ou crie exercícios com testes ocultos para seus alunos.</p>
+  </div>
+  <div class="badge">MVP 0.1</div>
+</header>
+
+<main class="shell">
+  <nav class="tabs" aria-label="Modos do sistema">
+    <button class="tab active" data-tab="personal">Modo pessoal</button>
+    <button class="tab" data-tab="teacher">Professor / Aluno</button>
+  </nav>
+
+  <section id="personal" class="panel active">
+    <div class="panel-heading">
+      <div>
+        <h2>Playground de testes</h2>
+        <p>Cole uma classe Java e o teste JUnit que deseja executar.</p>
+      </div>
+      <button id="runPersonal" class="primary">Executar testes</button>
+    </div>
+
+    <label>Nome da classe
+      <input id="personalClassName" value="Calculadora" maxlength="180">
+    </label>
+
+    <div class="editor-grid">
+      <label>Código Java
+        <textarea id="personalSource" spellcheck="false">public class Calculadora {
+    public int somar(int a, int b) {
+        return a + b;
+    }
+}</textarea>
+      </label>
+      <label>Teste JUnit 5
+        <textarea id="personalTest" spellcheck="false">import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class CalculadoraTest {
+    @Test
+    void deveSomarDoisNumeros() {
+        assertEquals(15, new Calculadora().somar(10, 5));
+    }
+}</textarea>
+      </label>
+    </div>
+
+    <div id="personalResult" class="result empty">O resultado aparecerá aqui.</div>
+  </section>
+
+  <section id="teacher" class="panel">
+    <div class="teacher-grid">
+      <article class="card">
+        <h2>Criar exercício</h2>
+        <label>Título<input id="exerciseTitle" value="Calculadora - soma"></label>
+        <label>Descrição<textarea id="exerciseDescription">Crie a classe Calculadora com o método int somar(int a, int b).</textarea></label>
+        <label>Classe esperada<input id="exerciseClassName" value="Calculadora"></label>
+        <label>Teste oculto
+          <textarea id="exerciseHiddenTest" spellcheck="false">import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class CalculadoraTest {
+    @Test
+    void deveSomarPositivos() {
+        assertEquals(7, new Calculadora().somar(3, 4));
+    }
+
+    @Test
+    void deveSomarNegativos() {
+        assertEquals(-7, new Calculadora().somar(-3, -4));
+    }
+}</textarea>
+        </label>
+        <button id="createExercise" class="primary full">Salvar exercício</button>
+      </article>
+
+      <article class="card">
+        <div class="card-heading">
+          <div>
+            <h2>Exercícios</h2>
+            <p>Selecione um exercício para enviar uma solução.</p>
+          </div>
+          <button id="refreshExercises" class="ghost">Atualizar</button>
+        </div>
+        <div id="exerciseList" class="list empty">Nenhum exercício carregado.</div>
+      </article>
+    </div>
+
+    <article id="submissionArea" class="card hidden">
+      <div class="card-heading">
+        <div>
+          <p class="eyebrow">EXERCÍCIO SELECIONADO</p>
+          <h2 id="selectedExerciseTitle">-</h2>
+          <p id="selectedExerciseDescription"></p>
+        </div>
+      </div>
+
+      <label>Nome do aluno<input id="studentName" value="Aluno 01" maxlength="120"></label>
+      <div class="submission-grid">
+        <div>
+          <label>Solução por código
+            <textarea id="studentSource" spellcheck="false">public class Calculadora {
+    public int somar(int a, int b) {
+        return a + b;
+    }
+}</textarea>
+          </label>
+          <button id="submitSource" class="primary full">Enviar código</button>
+        </div>
+        <div class="upload-box">
+          <h3>Ou envie um projeto .zip</h3>
+          <p>O ZIP deve conter seus arquivos em <code>src/main/java</code>. O POM enviado é ignorado por segurança.</p>
+          <input id="zipFile" type="file" accept=".zip,application/zip">
+          <button id="submitZip" class="secondary full">Enviar ZIP</button>
+        </div>
+      </div>
+      <div id="submissionResult" class="result empty">A execução da submissão aparecerá aqui.</div>
+    </article>
+
+    <article id="historyCard" class="card hidden">
+      <div class="card-heading">
+        <h2>Histórico de submissões</h2>
+        <button id="refreshHistory" class="ghost">Atualizar</button>
+      </div>
+      <div id="submissionHistory" class="history empty">Nenhuma submissão.</div>
+    </article>
+  </section>
+</main>
+
+<footer>
+  <span>CodeTest Lab • Java Backend Testing Platform</span>
+  <span>Execução isolada via Docker</span>
+</footer>
+<script src="/app.js"></script>
+</body>
+</html>
