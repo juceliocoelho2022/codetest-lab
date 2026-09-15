@@ -1,19 +1,33 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
   <title>CodeTest Lab</title>
+  <script>
+    (() => {
+      const savedTheme = localStorage.getItem('codetest-theme');
+      const systemTheme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      document.documentElement.dataset.theme = savedTheme || systemTheme;
+    })();
+  </script>
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
 <header class="hero">
-  <div>
+  <div class="hero-copy">
     <p class="eyebrow">JAVA 21 • JUNIT 5 • MOCKITO • DOCKER</p>
     <h1>CodeTest Lab</h1>
     <p>Teste código Java no modo pessoal ou crie exercícios com testes ocultos para seus alunos.</p>
   </div>
-  <div class="badge">MVP 0.1</div>
+  <div class="hero-actions">
+    <div class="badge">MVP 0.2</div>
+    <button id="themeToggle" class="theme-toggle" type="button" aria-label="Alternar tema" title="Alternar tema">
+      <span id="themeIcon" aria-hidden="true">☀️</span>
+      <span id="themeLabel">Light</span>
+    </button>
+  </div>
 </header>
 
 <main class="shell">
@@ -22,28 +36,28 @@
     <button class="tab" data-tab="teacher">Professor / Aluno</button>
   </nav>
 
-  <section id="personal" class="panel active">
+  <section id="personal" class="panel personal-panel active">
     <div class="panel-heading">
       <div>
         <h2>Playground de testes</h2>
         <p>Cole uma classe Java e o teste JUnit que deseja executar.</p>
       </div>
-      <button id="runPersonal" class="primary">Executar testes</button>
+      <button id="runPersonal" class="primary run-button">Executar testes</button>
     </div>
 
-    <label>Nome da classe
+    <label class="class-field">Nome da classe
       <input id="personalClassName" value="Calculadora" maxlength="180">
     </label>
 
     <div class="editor-grid">
-      <label>Código Java
+      <label class="editor-field">Código Java
         <textarea id="personalSource" spellcheck="false">public class Calculadora {
     public int somar(int a, int b) {
         return a + b;
     }
 }</textarea>
       </label>
-      <label>Teste JUnit 5
+      <label class="editor-field">Teste JUnit 5
         <textarea id="personalTest" spellcheck="false">import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -59,7 +73,7 @@ class CalculadoraTest {
     <div id="personalResult" class="result empty">O resultado aparecerá aqui.</div>
   </section>
 
-  <section id="teacher" class="panel">
+  <section id="teacher" class="panel teacher-panel">
     <div class="teacher-grid">
       <article class="card">
         <h2>Criar exercício</h2>
