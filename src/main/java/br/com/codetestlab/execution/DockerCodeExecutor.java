@@ -37,7 +37,8 @@ public class DockerCodeExecutor implements CodeExecutor {
 
             StringBuilder output = new StringBuilder();
             Thread reader = Thread.ofVirtual().start(() -> drain(process, output));
-            boolean finished = process.waitFor(properties.timeoutSeconds(), TimeUnit.SECONDS);
+            int timeoutSeconds = request.executionProfile().timeoutSeconds(properties.timeoutSeconds());
+            boolean finished = process.waitFor(timeoutSeconds, TimeUnit.SECONDS);
             long durationMs = elapsedMs(start);
 
             if (!finished) {
