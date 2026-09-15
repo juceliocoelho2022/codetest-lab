@@ -2,6 +2,7 @@ package br.com.codetestlab.execution;
 
 import org.w3c.dom.Element;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,8 +34,15 @@ public final class SurefireReportReader {
         if (files == 0) return fallback;
         int failed = failures + errors;
         int passed = Math.max(0, tests - failed - skipped);
-        return new ExecutionResult(fallback.status(), tests, passed, failed, skipped,
-                fallback.durationMs(), fallback.output());
+        return new ExecutionResult(
+                fallback.status(),
+                tests,
+                passed,
+                failed,
+                skipped,
+                fallback.durationMs(),
+                fallback.output(),
+                fallback.coverage());
     }
 
     private Element parse(Path xml) throws Exception {
@@ -42,8 +50,11 @@ public final class SurefireReportReader {
         factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
         factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
         factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+        factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
         factory.setXIncludeAware(false);
         factory.setExpandEntityReferences(false);
+        factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+        factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
         return factory.newDocumentBuilder().parse(xml.toFile()).getDocumentElement();
     }
 
