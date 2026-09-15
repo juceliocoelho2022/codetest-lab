@@ -1,6 +1,29 @@
 const $ = (id) => document.getElementById(id);
 let selectedExercise = null;
 
+const THEME_KEY = 'codetest-theme';
+const themeToggle = $('themeToggle');
+const themeIcon = $('themeIcon');
+const themeLabel = $('themeLabel');
+
+function applyTheme(theme, persist = false) {
+  const nextTheme = theme === 'light' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = nextTheme;
+  const switchingToLight = nextTheme === 'dark';
+  themeIcon.textContent = switchingToLight ? '☀️' : '🌙';
+  themeLabel.textContent = switchingToLight ? 'Light' : 'Dark';
+  themeToggle.setAttribute('aria-label', switchingToLight ? 'Ativar tema claro' : 'Ativar tema escuro');
+  themeToggle.setAttribute('title', switchingToLight ? 'Ativar tema claro' : 'Ativar tema escuro');
+  if (persist) localStorage.setItem(THEME_KEY, nextTheme);
+}
+
+applyTheme(document.documentElement.dataset.theme);
+
+themeToggle.addEventListener('click', () => {
+  const current = document.documentElement.dataset.theme;
+  applyTheme(current === 'dark' ? 'light' : 'dark', true);
+});
+
 for (const tab of document.querySelectorAll('.tab')) {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -28,8 +51,22 @@ function renderExecution(target, result) {
   status.className = `status ${result.status}`;
   status.textContent = result.status;
   const summary = document.createElement('div');
-  summary.textContent = `Testes: ${result.testsRun} | Passaram: ${result.testsPassed} | Falharam: ${result.testsFailed} | Ignorados: ${result.testsSkipped} | ${result.durationMs} ms`;
+  summary.className = 'execution-summary';
+  const metrics = [
+    `Testes: ${result.testsRun}`,
+    `Passaram: ${result.testsPassed}`,
+    `Falharam: ${result.testsFailed}`,
+    `Ignorados: ${result.testsSkipped}`,
+    `${result.durationMs} ms`
+  ];
+  for (const value of metrics) {
+    const metric = document.createElement('span');
+    metric.className = 'metric';
+    metric.textContent = value;
+    summary.appendChild(metric);
+  }
   const output = document.createElement('pre');
+  output.className = 'execution-output';
   output.textContent = result.output || '(sem saída)';
   target.append(status, summary, output);
 }
