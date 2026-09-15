@@ -7,13 +7,32 @@ const themeIcon = $('themeIcon');
 const themeLabel = $('themeLabel');
 const runPersonalButton = $('runPersonal');
 const executionProfile = $('executionProfile');
+const profileHelpTitle = $('profileHelpTitle');
 const profileHelp = $('profileHelp');
+const profileHelpTags = $('profileHelpTags');
+const profileCards = [...document.querySelectorAll('.profile-card')];
 
-const PROFILE_HELP = {
-  JUNIT5: 'JUnit 5 executa os testes sem bibliotecas adicionais de mock ou cobertura.',
-  JUNIT5_MOCKITO: 'JUnit 5 executa testes; Mockito habilita mocks de dependências.',
-  JUNIT5_JACOCO: 'JUnit 5 executa testes; JaCoCo mede a cobertura do código.',
-  JUNIT5_MOCKITO_JACOCO: 'JUnit 5 + mocks com Mockito + cobertura de código com JaCoCo.'
+const PROFILE_INFO = {
+  JUNIT5: {
+    title: 'JUnit 5',
+    description: 'Framework base para criar e executar testes automatizados com assertions e ciclo de testes rápido.',
+    tags: ['JUnit 5', 'Assertions']
+  },
+  JUNIT5_MOCKITO: {
+    title: 'JUnit 5 + Mockito',
+    description: 'Execute testes unitários e isole dependências com mocks, stubs e verificações.',
+    tags: ['JUnit 5', 'Mockito', 'Mocks']
+  },
+  JUNIT5_JACOCO: {
+    title: 'JUnit 5 + JaCoCo',
+    description: 'Execute os testes e visualize cobertura de linhas, métodos, branches e classes.',
+    tags: ['JUnit 5', 'JaCoCo', 'Coverage']
+  },
+  JUNIT5_MOCKITO_JACOCO: {
+    title: 'JUnit 5 + Mockito + JaCoCo',
+    description: 'Perfil completo para testar comportamento, isolar dependências e medir cobertura de código.',
+    tags: ['JUnit 5', 'Mockito', 'JaCoCo']
+  }
 };
 
 function applyTheme(theme, persist = false) {
@@ -40,12 +59,122 @@ themeToggle.addEventListener('click', () => {
   applyTheme(current === 'dark' ? 'light' : 'dark', true);
 });
 
-function updateProfileHelp() {
-  profileHelp.textContent = PROFILE_HELP[executionProfile.value] || PROFILE_HELP.JUNIT5_MOCKITO;
+function renderProfileTags(tags) {
+  profileHelpTags.innerHTML = '';
+  for (const tag of tags) {
+    const chip = document.createElement('span');
+    chip.className = 'profile-help-tag';
+    chip.textContent = tag;
+    profileHelpTags.appendChild(chip);
+  }
 }
 
-executionProfile.addEventListener('change', updateProfileHelp);
-updateProfileHelp();
+function selectExecutionProfile(profile) {
+  const selectedProfile = PROFILE_INFO[profile] ? profile : 'JUNIT5_MOCKITO';
+  const info = PROFILE_INFO[selectedProfile];
+
+  executionProfile.value = selectedProfile;
+  profileHelpTitle.textContent = info.title;
+  profileHelp.textContent = info.description;
+  renderProfileTags(info.tags);
+
+  for (const card of profileCards) {
+    const active = card.dataset.profile === selectedProfile;
+    card.classList.toggle('active', active);
+    card.setAttribute('aria-checked', String(active));
+    card.tabIndex = active ? 0 : -1;
+  }
+}
+
+profileCards.forEach((card) => {
+  card.addEventListener('click', () => selectExecutionProfile(card.dataset.profile));
+  card.addEventListener('keydown', (event) => {
+    if (!['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp'].includes(event.key)) return;
+    event.preventDefault();
+
+    const currentIndex = profileCards.indexOf(card);
+    const direction = ['ArrowRight', 'ArrowDown'].includes(event.key) ? 1 : -1;
+    const nextIndex = (currentIndex + direction + profileCards.length) % profileCards.length;
+    const nextCard = profileCards[nextIndex];
+    selectExecutionProfile(nextCard.dataset.profile);
+    nextCard.focus();
+  });
+});
+
+selectExecutionProfile(executionProfile.value);
+
+function setupNumberedEditor(textareaId, gutterId) {
+  const textarea = $(textareaId);
+  const gutter = $(gutterId);
+  const editor = {textarea, gutter, activeLine: null};
+
+  textarea.addEventListener('input', () => {
+    const maxLine = Math.max(1, textarea.value.split('\n').length);
+    if (editor.activeLine && editor.activeLine > maxLine) editor.activeLine = null;
+    renderLineNumbers(editor);
+  });
+
+  textarea.addEventListener('scroll', () => {
+    gutter.scrollTop = textarea.scrollTop;
+  });
+
+  renderLineNumbers(editor);
+  return editor;
+}
+
+function renderLineNumbers(editor) {
+  const lineCount = Math.max(1, editor.textarea.value.split('\n').length);
+  const fragment = document.createDocumentFragment();
+
+  for (let line = 1; line <= lineCount; line++) {
+    const number = document.createElement('span');
+    number.className = 'line-number';
+    number.dataset.line = String(line);
+    number.textContent = String(line);
+    if (editor.activeLine === line) number.classList.add('error-line');
+    fragment.appendChild(number);
+  }
+
+  editor.gutter.replaceChildren(fragment);
+  editor.gutter.scrollTop = editor.textarea.scrollTop;
+}
+
+const numberedEditors = {
+  source: setupNumberedEditor('personalSource', 'personalSourceLines'),
+  test: setupNumberedEditor('personalTest', 'personalTestLines')
+};
+
+function clearEditorDiagnostics() {
+  for (const editor of Object.values(numberedEditors)) {
+    editor.activeLine = null;
+    renderLineNumbers(editor);
+  }
+}
+
+function jumpToEditorLine(editorKey, requestedLine, focusLine = true) {
+  const editor = numberedEditors[editorKey];
+  if (!editor) return;
+
+  const lines = editor.textarea.value.split('\n');
+  const line = Math.min(lines.length, Math.max(1, Number(requestedLine) || 1));
+  editor.activeLine = line;
+  renderLineNumbers(editor);
+
+  const computed = getComputedStyle(editor.textarea);
+  const lineHeight = Number.parseFloat(computed.lineHeight) || 20;
+  const paddingTop = Number.parseFloat(computed.paddingTop) || 0;
+  const targetTop = paddingTop + ((line - 1) * lineHeight);
+  editor.textarea.scrollTop = Math.max(0, targetTop - (editor.textarea.clientHeight / 2) + lineHeight);
+  editor.gutter.scrollTop = editor.textarea.scrollTop;
+
+  if (!focusLine) return;
+
+  let start = 0;
+  for (let index = 0; index < line - 1; index++) start += lines[index].length + 1;
+  const end = start + lines[line - 1].length;
+  editor.textarea.focus();
+  editor.textarea.setSelectionRange(start, end);
+}
 
 for (const tab of document.querySelectorAll('.tab')) {
   tab.addEventListener('click', () => {
@@ -229,6 +358,45 @@ function appendGuidance(container, result, details) {
   container.appendChild(guidance);
 }
 
+function diagnosticEditorKey(result, details) {
+  if (!details.line) return null;
+  if (result.status === 'FAILED') return 'test';
+  if (result.status !== 'COMPILE_ERROR') return null;
+
+  const file = (details.file || '').toLowerCase();
+  const className = $('personalClassName').value.trim().split('.').pop();
+  const sourceFile = `${className}.java`.toLowerCase();
+
+  if (file && file === sourceFile) return 'source';
+  if (file.endsWith('test.java')) return 'test';
+  return 'source';
+}
+
+function markDiagnosticLine(result, details) {
+  const editorKey = diagnosticEditorKey(result, details);
+  if (!editorKey) return null;
+  jumpToEditorLine(editorKey, details.line, false);
+  return editorKey;
+}
+
+function appendDiagnosticAction(container, result, details) {
+  const editorKey = diagnosticEditorKey(result, details);
+  if (!editorKey) return;
+
+  const actions = document.createElement('div');
+  actions.className = 'diagnostic-actions';
+
+  const button = document.createElement('button');
+  button.className = 'diagnostic-jump';
+  button.type = 'button';
+  const editorLabel = editorKey === 'source' ? 'Código Java' : 'Teste JUnit 5';
+  button.textContent = `↗ Ir para linha ${details.line} • ${editorLabel}`;
+  button.addEventListener('click', () => jumpToEditorLine(editorKey, details.line, true));
+
+  actions.appendChild(button);
+  container.appendChild(actions);
+}
+
 function coverageValue(value) {
   if (value === null || value === undefined || Number.isNaN(Number(value))) return null;
   return Math.min(100, Math.max(0, Number(value)));
@@ -323,6 +491,12 @@ function appendTechnicalDetails(container, output) {
 function renderExecution(target, result) {
   const parsed = parseExecutionDetails(result.output || '');
   const presentation = resultPresentation(result);
+  const isPersonalResult = target.id === 'personalResult';
+
+  if (isPersonalResult) {
+    clearEditorDiagnostics();
+    markDiagnosticLine(result, parsed);
+  }
 
   target.className = `result result-card ${presentation.tone}`;
   target.innerHTML = '';
@@ -369,6 +543,7 @@ function renderExecution(target, result) {
   appendTestMetrics(target, result);
   appendFriendlyDetails(target, result, parsed);
   appendGuidance(target, result, parsed);
+  if (isPersonalResult) appendDiagnosticAction(target, result, parsed);
 
   if (result.status !== 'COMPILE_ERROR' && result.coverage) {
     appendCoverage(target, result.coverage);
@@ -378,6 +553,8 @@ function renderExecution(target, result) {
 }
 
 function renderError(target, error) {
+  if (target.id === 'personalResult') clearEditorDiagnostics();
+
   target.className = 'result result-card infrastructure-error';
   target.innerHTML = '';
 
@@ -401,12 +578,14 @@ function renderError(target, error) {
 }
 
 function resetPersonalResult() {
+  clearEditorDiagnostics();
   const target = $('personalResult');
   target.className = 'result empty';
   target.textContent = 'O resultado aparecerá aqui.';
 }
 
 async function runPersonalTests() {
+  clearEditorDiagnostics();
   const target = $('personalResult');
   target.className = 'result empty running';
   target.textContent = 'Executando testes...';
