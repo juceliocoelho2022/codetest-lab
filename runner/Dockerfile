@@ -6,10 +6,10 @@ RUN mkdir -p src/test/java \
     && printf '%s\n' \
        'import org.junit.jupiter.api.Test;' \
        'import static org.junit.jupiter.api.Assertions.assertTrue;' \
-       'class CacheWarmupTest { @Test void warmsSurefireProvider() { assertTrue(true); } }' \
+       'class CacheWarmupTest { @Test void warmsSurefireProviderAndJacoco() { assertTrue(true); } }' \
        > src/test/java/CacheWarmupTest.java \
-    && mvn -q test \
+    && mvn -q verify \
     && rm -rf src target
 
 WORKDIR /workspace
-ENTRYPOINT ["mvn", "-o", "-q", "test", "-Dstyle.color=never"]
+ENTRYPOINT ["mvn", "-o", "-q", "verify", "-Dstyle.color=never"]
