@@ -45,6 +45,15 @@ assert.match(js, /Ir para linha/, 'result must offer jump-to-line action');
 assert.match(css, /\.line-gutter/, 'line gutter styling must exist');
 assert.match(css, /\.line-number\.error-line/, 'error line styling must exist');
 
+// Student submission editor: large, full-width and numbered.
+assert.match(html, /id="studentSourceLines"/, 'student Java editor line gutter must exist');
+assert.match(html, /class="student-code-area"/, 'student solution must use a dedicated full-width editor area');
+assert.match(html, /class="student-code-editor/, 'student solution must use the numbered editor shell');
+assert.match(js, /setupNumberedEditor\(['"]studentSource['"],\s*['"]studentSourceLines['"]\)/, 'student editor must initialize line numbers');
+assert.match(css, /\.student-code-area\s*\{[\s\S]*?grid-column:\s*1\s*\/\s*-1/, 'student editor must span the full submission width');
+assert.match(css, /\.student-code-editor\s*\{[\s\S]*?min-height:\s*340px/, 'student editor must be substantially taller on desktop');
+assert.match(css, /\.student-upload-row\s*\{[\s\S]*?display:\s*grid/, 'ZIP upload must become a secondary row');
+
 // Regression: controls must stay compact and editors must dominate the viewport.
 assert.match(css, /\.class-run-row\s*\{[\s\S]*?grid-template-columns:\s*minmax\(180px,[^;]+\)\s+minmax\(240px,[^;]+\)\s+auto/, 'desktop controls must fit class, profile chooser and actions in one row');
 assert.match(css, /\.personal-panel\.active\s*\{[\s\S]*?grid-template-rows:\s*auto auto minmax\(180px,\s*1fr\) auto/, 'desktop layout must reserve at least 180px for editors');
@@ -61,4 +70,4 @@ assert.match(js, /document\.createElement\(['"]details['"]\)/, 'technical log mu
 assert.match(css, /\.result-card/, 'result dashboard card styling must exist');
 assert.match(css, /\.coverage-grid/, 'coverage grid styling must exist');
 
-console.log('UI_SMOKE_V032_DROPDOWN_EDITORS_OK');
+console.log('UI_SMOKE_V033_STUDENT_EDITOR_OK');
