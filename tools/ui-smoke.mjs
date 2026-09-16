@@ -6,7 +6,13 @@ const css = fs.readFileSync('src/main/resources/static/styles.css', 'utf8');
 const studentCss = fs.existsSync('src/main/resources/static/student-editor.css')
   ? fs.readFileSync('src/main/resources/static/student-editor.css', 'utf8')
   : '';
+const healthCss = fs.existsSync('src/main/resources/static/runner-health.css')
+  ? fs.readFileSync('src/main/resources/static/runner-health.css', 'utf8')
+  : '';
 const js = fs.readFileSync('src/main/resources/static/app.js', 'utf8');
+const healthJs = fs.existsSync('src/main/resources/static/runner-health.js')
+  ? fs.readFileSync('src/main/resources/static/runner-health.js', 'utf8')
+  : '';
 const frontendCode = `${html}\n${js}`;
 
 // Theme and viewport behavior.
@@ -75,4 +81,17 @@ assert.match(js, /document\.createElement\(['"]details['"]\)/, 'technical log mu
 assert.match(css, /\.result-card/, 'result dashboard card styling must exist');
 assert.match(css, /\.coverage-grid/, 'coverage grid styling must exist');
 
-console.log('UI_SMOKE_V033_STUDENT_EDITOR_OK');
+// v0.3.4 Docker/runner health indicator.
+assert.match(html, /runner-health\.css/, 'runner health stylesheet must be loaded');
+assert.match(html, /runner-health\.js/, 'runner health script must be loaded');
+assert.match(html, /id="runnerHealth"/, 'runner health button must exist');
+assert.match(html, /id="runnerHealthLabel"/, 'runner health label must exist');
+assert.match(html, /MVP 0\.3\.4/, 'MVP badge must identify v0.3.4');
+assert.match(healthJs, /\/api\/v1\/health\/runner/, 'runner health UI must call the health endpoint');
+assert.match(healthJs, /refreshRunnerHealth/, 'runner health must support refresh');
+assert.match(healthJs, /runnerHealth\.addEventListener\(['"]click['"]/, 'health indicator must be manually refreshable');
+assert.match(healthCss, /\.runner-health\.up/, 'online health state must be styled');
+assert.match(healthCss, /\.runner-health\.degraded/, 'degraded health state must be styled');
+assert.match(healthCss, /\.runner-health\.down/, 'down health state must be styled');
+
+console.log('UI_SMOKE_V034_DOCKER_HEALTH_OK');
