@@ -28,7 +28,7 @@ public final class ExecutionOutputParser {
         ExecutionStatus status;
         if (exitCode == 0) {
             status = ExecutionStatus.PASSED;
-        } else if (containsInfrastructureFailure(safeOutput)) {
+        } else if (testsRun == 0 && containsInfrastructureFailure(safeOutput)) {
             status = ExecutionStatus.INFRASTRUCTURE_ERROR;
         } else if (containsCompileFailure(safeOutput)) {
             status = ExecutionStatus.COMPILE_ERROR;
