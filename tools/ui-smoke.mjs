@@ -86,7 +86,6 @@ assert.match(html, /runner-health\.css/, 'runner health stylesheet must be loade
 assert.match(html, /runner-health\.js/, 'runner health script must be loaded');
 assert.match(html, /id="runnerHealth"/, 'runner health button must exist');
 assert.match(html, /id="runnerHealthLabel"/, 'runner health label must exist');
-assert.match(html, /MVP 0\.3\.4/, 'MVP badge must identify v0.3.4');
 assert.match(healthJs, /\/api\/v1\/health\/runner/, 'runner health UI must call the health endpoint');
 assert.match(healthJs, /refreshRunnerHealth/, 'runner health must support refresh');
 assert.match(healthJs, /runnerHealth\.addEventListener\(['"]click['"]/, 'health indicator must be manually refreshable');
@@ -94,4 +93,16 @@ assert.match(healthCss, /\.runner-health\.up/, 'online health state must be styl
 assert.match(healthCss, /\.runner-health\.degraded/, 'degraded health state must be styled');
 assert.match(healthCss, /\.runner-health\.down/, 'down health state must be styled');
 
-console.log('UI_SMOKE_V034_DOCKER_HEALTH_OK');
+// v0.3.5 Execution Guard.
+assert.match(html, /MVP 0\.3\.5/, 'MVP badge must identify v0.3.5');
+assert.match(html, /id="executionGuard"/, 'execution guard message must exist');
+assert.match(html, /id="executionGuardMessage"/, 'execution guard explanation must exist');
+assert.match(healthJs, /function setExecutionAvailability\(/, 'health UI must control execution availability');
+assert.match(healthJs, /runPersonal/, 'personal execution button must be guarded');
+assert.match(healthJs, /submitSource/, 'student source submission must be guarded');
+assert.match(healthJs, /submitZip/, 'student ZIP submission must be guarded');
+assert.match(healthJs, /disabled\s*=\s*!ready/, 'execution controls must be disabled while environment is not ready');
+assert.match(healthCss, /\.execution-guard/, 'execution guard message must be styled');
+assert.match(healthCss, /\.execution-guard\.visible/, 'execution guard visible state must be styled');
+
+console.log('UI_SMOKE_V035_EXECUTION_GUARD_OK');
