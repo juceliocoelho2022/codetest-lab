@@ -28,4 +28,24 @@ class ExecutionOutputParserTest {
         var result = parser.parse(1, "[ERROR] COMPILATION ERROR cannot find symbol", 10);
         assertEquals(ExecutionStatus.COMPILE_ERROR, result.status());
     }
+
+    @Test
+    void shouldDetectDockerDaemonUnavailableAsInfrastructureError() {
+        String output = "Error response from daemon: Docker Desktop is unable to start\n"
+                + "docker daemon did not become ready: context deadline exceeded";
+
+        var result = parser.parse(1, output, 1_200);
+
+        assertEquals(ExecutionStatus.INFRASTRUCTURE_ERROR, result.status());
+    }
+
+    @Test
+    void shouldDetectMissingRunnerImageAsInfrastructureError() {
+        String output = "docker: Error response from daemon: pull access denied for codetest-lab-runner, "
+                + "repository does not exist or may require 'docker login'";
+
+        var result = parser.parse(125, output, 650);
+
+        assertEquals(ExecutionStatus.INFRASTRUCTURE_ERROR, result.status());
+    }
 }
