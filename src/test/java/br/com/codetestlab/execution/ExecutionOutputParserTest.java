@@ -48,4 +48,15 @@ class ExecutionOutputParserTest {
 
         assertEquals(ExecutionStatus.INFRASTRUCTURE_ERROR, result.status());
     }
+
+    @Test
+    void shouldKeepTestFailureWhenDockerWordsAreOnlyPartOfTestOutput() {
+        String output = "Tests run: 1, Failures: 1, Errors: 0, Skipped: 0\n"
+                + "Assertion failed: Error response from daemon was expected in the message";
+
+        var result = parser.parse(1, output, 40);
+
+        assertEquals(ExecutionStatus.FAILED, result.status());
+        assertEquals(1, result.testsRun());
+    }
 }
