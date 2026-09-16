@@ -41,6 +41,28 @@ class JacocoReportReaderTest {
     }
 
     @Test
+    void shouldReadOfficialJacocoDoctypeWithoutLoadingExternalDtd() throws Exception {
+        Path xml = tempDir.resolve("jacoco-with-doctype.xml");
+        Files.writeString(xml, """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <!DOCTYPE report PUBLIC "-//JACOCO//DTD Report 1.1//EN" "report.dtd">
+                <report name="submission">
+                  <counter type="BRANCH" missed="2" covered="2"/>
+                  <counter type="LINE" missed="3" covered="5"/>
+                  <counter type="METHOD" missed="0" covered="2"/>
+                  <counter type="CLASS" missed="0" covered="1"/>
+                </report>
+                """);
+
+        CoverageResult coverage = new JacocoReportReader().read(xml);
+
+        assertEquals(62.5, coverage.linePercent());
+        assertEquals(100.0, coverage.methodPercent());
+        assertEquals(50.0, coverage.branchPercent());
+        assertEquals(100.0, coverage.classPercent());
+    }
+
+    @Test
     void shouldReturnNullForZeroDenominatorMetric() throws Exception {
         Path xml = tempDir.resolve("jacoco.xml");
         Files.writeString(xml, """
