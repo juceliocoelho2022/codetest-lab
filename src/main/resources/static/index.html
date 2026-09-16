@@ -14,6 +14,7 @@
   </script>
   <link rel="stylesheet" href="/styles.css">
   <link rel="stylesheet" href="/student-editor.css">
+  <link rel="stylesheet" href="/runner-health.css">
 </head>
 <body>
 <header class="hero">
@@ -23,7 +24,13 @@
     <p>Teste código Java no modo pessoal ou crie exercícios com testes ocultos para seus alunos.</p>
   </div>
   <div class="hero-actions">
-    <div class="badge">MVP 0.3.3</div>
+    <div class="badge">MVP 0.3.4</div>
+    <button id="runnerHealth" class="runner-health checking" type="button"
+            aria-label="Verificar ambiente Docker" title="Verificando Docker e runner">
+      <span class="runner-health-dot" aria-hidden="true"></span>
+      <span id="runnerHealthLabel" aria-live="polite">Verificando Docker…</span>
+      <span class="runner-health-refresh" aria-hidden="true">↻</span>
+    </button>
     <button id="themeToggle" class="theme-toggle" type="button" aria-label="Alternar tema" title="Alternar tema">
       <span id="themeIcon" aria-hidden="true">🌙</span>
       <span id="themeLabel">Escuro</span>
@@ -261,6 +268,7 @@ class CalculadoraTest {
   <span>Execução isolada via Docker</span>
 </footer>
 <script src="/app.js"></script>
+<script src="/runner-health.js"></script>
 <script>
   setupNumberedEditor('studentSource', 'studentSourceLines');
 </script>
