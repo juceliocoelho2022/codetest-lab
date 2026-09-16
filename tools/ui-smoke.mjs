@@ -94,9 +94,9 @@ assert.match(healthCss, /\.runner-health\.degraded/, 'degraded health state must
 assert.match(healthCss, /\.runner-health\.down/, 'down health state must be styled');
 
 // v0.3.5 Execution Guard.
-assert.match(html, /MVP 0\.3\.5/, 'MVP badge must identify v0.3.5');
-assert.match(html, /id="executionGuard"/, 'execution guard message must exist');
-assert.match(html, /id="executionGuardMessage"/, 'execution guard explanation must exist');
+assert.match(healthJs, /MVP 0\.3\.5/, 'health UI must advance the visible MVP badge to v0.3.5');
+assert.match(healthJs, /executionGuard/, 'execution guard UI must be created by the health module');
+assert.match(healthJs, /executionGuardMessage/, 'execution guard explanation must be maintained');
 assert.match(healthJs, /function setExecutionAvailability\(/, 'health UI must control execution availability');
 assert.match(healthJs, /runPersonal/, 'personal execution button must be guarded');
 assert.match(healthJs, /submitSource/, 'student source submission must be guarded');
