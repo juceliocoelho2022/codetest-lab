@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 public class DockerHealthService {
     private static final Duration PROBE_TIMEOUT = Duration.ofSeconds(4);
     private static final int MAX_MESSAGE_CHARS = 240;
+    private static final int MAX_PROBE_OUTPUT_CHARS = 4_096;
 
     private final ExecutionProperties properties;
     private final CommandRunner commandRunner;
@@ -145,11 +146,12 @@ public class DockerHealthService {
             try (var reader = new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8)) {
                 char[] buffer = new char[1024];
                 int read;
+                int retained = 0;
                 while ((read = reader.read(buffer)) != -1) {
-                    output.append(buffer, 0, read);
-                    if (output.length() > 4_096) {
-                        output.setLength(4_096);
-                        break;
+                    if (retained < MAX_PROBE_OUTPUT_CHARS) {
+                        int toAppend = Math.min(read, MAX_PROBE_OUTPUT_CHARS - retained);
+                        output.append(buffer, 0, toAppend);
+                        retained += toAppend;
                     }
                 }
             } catch (IOException ignored) {
