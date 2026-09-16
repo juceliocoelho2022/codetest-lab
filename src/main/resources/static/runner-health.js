@@ -38,7 +38,7 @@
 
     for (const button of executionButtons) {
       if (!environmentReady) {
-        button.disabled = true;
+        button.disabled = !ready;
         button.dataset.executionGuard = 'blocked';
         button.setAttribute('aria-disabled', 'true');
       } else {
