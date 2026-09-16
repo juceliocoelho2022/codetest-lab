@@ -1,0 +1,107 @@
+.runner-health {
+  min-width: 148px;
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 7px 10px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  font-size: .72rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.runner-health:hover {
+  background: var(--surface-2);
+  border-color: var(--accent-2);
+}
+
+.runner-health:focus-visible {
+  outline: none;
+  border-color: var(--accent-2);
+  box-shadow: 0 0 0 3px var(--focus);
+}
+
+.runner-health-dot {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 8px;
+  border-radius: 50%;
+  background: var(--muted);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--muted) 16%, transparent);
+}
+
+.runner-health-refresh {
+  color: var(--muted);
+  font-size: .82rem;
+  line-height: 1;
+}
+
+.runner-health.checking .runner-health-dot {
+  background: var(--accent-2);
+  animation: runner-health-pulse 1s ease-in-out infinite;
+}
+
+.runner-health.up {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+  background: color-mix(in srgb, var(--surface) 90%, var(--accent) 10%);
+}
+
+.runner-health.up .runner-health-dot {
+  background: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.runner-health.degraded {
+  border-color: color-mix(in srgb, var(--warn) 60%, var(--line));
+  background: color-mix(in srgb, var(--surface) 90%, var(--warn) 10%);
+}
+
+.runner-health.degraded .runner-health-dot {
+  background: var(--warn);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--warn) 18%, transparent);
+}
+
+.runner-health.down {
+  border-color: color-mix(in srgb, var(--danger) 58%, var(--line));
+  background: color-mix(in srgb, var(--surface) 90%, var(--danger) 10%);
+}
+
+.runner-health.down .runner-health-dot {
+  background: var(--danger);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 18%, transparent);
+}
+
+.runner-health.checking .runner-health-refresh {
+  animation: runner-health-spin .9s linear infinite;
+}
+
+@keyframes runner-health-pulse {
+  0%, 100% { opacity: .45; transform: scale(.86); }
+  50% { opacity: 1; transform: scale(1.08); }
+}
+
+@keyframes runner-health-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-height: 700px) and (min-width: 821px) {
+  .runner-health {
+    min-height: 28px;
+    min-width: 132px;
+    padding: 5px 8px;
+    font-size: .64rem;
+  }
+}
+
+@media (max-width: 820px) {
+  .runner-health {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+}
