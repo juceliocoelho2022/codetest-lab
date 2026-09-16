@@ -28,6 +28,8 @@ public final class ExecutionOutputParser {
         ExecutionStatus status;
         if (exitCode == 0) {
             status = ExecutionStatus.PASSED;
+        } else if (containsInfrastructureFailure(safeOutput)) {
+            status = ExecutionStatus.INFRASTRUCTURE_ERROR;
         } else if (containsCompileFailure(safeOutput)) {
             status = ExecutionStatus.COMPILE_ERROR;
         } else {
@@ -35,6 +37,19 @@ public final class ExecutionOutputParser {
         }
 
         return new ExecutionResult(status, testsRun, passed, failed, skipped, durationMs, safeOutput);
+    }
+
+    private boolean containsInfrastructureFailure(String output) {
+        String normalized = output.toLowerCase();
+        return normalized.contains("docker desktop is unable to start")
+                || normalized.contains("docker daemon did not become ready")
+                || normalized.contains("cannot connect to the docker daemon")
+                || normalized.contains("error during connect")
+                || (normalized.contains("request returned 500 internal server error")
+                    && normalized.contains("docker"))
+                || normalized.contains("pull access denied for codetest-lab-runner")
+                || normalized.contains("no such image: codetest-lab-runner")
+                || normalized.contains("error response from daemon");
     }
 
     private boolean containsCompileFailure(String output) {
