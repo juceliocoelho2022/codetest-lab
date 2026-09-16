@@ -1,0 +1,43 @@
+/* JaCoCo result visibility: expand only when coverage is actually present. */
+#personalResult:has(.coverage-section) {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+@media (max-height: 700px) and (min-width: 821px) {
+  #personalResult:has(.coverage-section) {
+    max-height: 150px;
+    overflow-y: auto;
+  }
+
+  #personalResult:has(.coverage-section) .result-message {
+    display: none;
+  }
+
+  #personalResult:has(.coverage-section) .coverage-note {
+    display: none;
+  }
+
+  #personalResult:has(.coverage-section) .coverage-section {
+    margin-top: 4px;
+    padding-top: 4px;
+  }
+
+  #personalResult:has(.coverage-section) .coverage-grid {
+    margin-top: 4px;
+    gap: 4px;
+  }
+
+  #personalResult:has(.coverage-section) .coverage-item {
+    padding: 4px 5px;
+  }
+
+  #personalResult:has(.coverage-section) .coverage-meta {
+    margin-bottom: 3px;
+  }
+
+  #personalResult:has(.coverage-section) .result-details {
+    margin-top: 4px;
+    padding-top: 4px;
+  }
+}
