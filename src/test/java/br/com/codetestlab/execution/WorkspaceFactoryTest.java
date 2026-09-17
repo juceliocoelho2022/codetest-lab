@@ -82,6 +82,72 @@ class WorkspaceFactoryTest {
     }
 
     @Test
+    void shouldMaterializeProfessionalMockitoWorkspace() throws Exception {
+        String repositorySource = """
+                public interface EstoqueRepository {
+                    boolean temEstoque(String produto, int quantidade);
+                    void retirarEstoque(String produto, int quantidade);
+                }
+                """;
+        String serviceSource = """
+                public class PedidoService {
+                    private final EstoqueRepository repository;
+
+                    public PedidoService(EstoqueRepository repository) {
+                        this.repository = repository;
+                    }
+
+                    public boolean realizar(String produto, int quantidade) {
+                        if (!repository.temEstoque(produto, quantidade)) return false;
+                        repository.retirarEstoque(produto, quantidade);
+                        return true;
+                    }
+                }
+                """;
+        String testCode = """
+                import org.junit.jupiter.api.Test;
+                import static org.junit.jupiter.api.Assertions.assertTrue;
+                import static org.mockito.Mockito.*;
+
+                class PedidoServiceTest {
+                    @Test
+                    void deveRetirarEstoqueQuandoDisponivel() {
+                        EstoqueRepository repository = mock(EstoqueRepository.class);
+                        when(repository.temEstoque("Notebook", 1)).thenReturn(true);
+                        PedidoService service = new PedidoService(repository);
+                        assertTrue(service.realizar("Notebook", 1));
+                        verify(repository).retirarEstoque("Notebook", 1);
+                    }
+                }
+                """;
+
+        WorkspaceFactory factory = new WorkspaceFactory(properties(100_000));
+        ExecutionRequest request = ExecutionRequest.sourceFiles(
+                "PedidoService",
+                List.of(
+                        new JavaSourceFile("EstoqueRepository.java", repositorySource),
+                        new JavaSourceFile("PedidoService.java", serviceSource)),
+                testCode,
+                ExecutionProfile.JUNIT5_MOCKITO);
+
+        Path workspace = factory.create(request);
+        try {
+            assertEquals(
+                    repositorySource,
+                    Files.readString(workspace.resolve("src/main/java/EstoqueRepository.java")));
+            assertEquals(
+                    serviceSource,
+                    Files.readString(workspace.resolve("src/main/java/PedidoService.java")));
+            assertEquals(
+                    testCode,
+                    Files.readString(workspace.resolve("src/test/java/PedidoServiceTest.java")));
+            assertTrue(Files.readString(workspace.resolve("pom.xml")).contains("mockito-junit-jupiter"));
+        } finally {
+            deleteRecursively(workspace);
+        }
+    }
+
+    @Test
     void shouldEnforceAggregateSourceLimitAtWorkspaceBoundary() {
         WorkspaceFactory factory = new WorkspaceFactory(properties(30));
         ExecutionRequest request = ExecutionRequest.sourceFiles(
