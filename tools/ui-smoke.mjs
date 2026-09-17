@@ -122,6 +122,10 @@ assert.match(html, /MVP 0\.4\.0/, 'MVP badge must identify v0.4.0');
 assert.doesNotMatch(healthJs, /MVP 0\.3\.5/, 'health module must not overwrite the v0.4.0 badge');
 assert.match(multiFileJs, /MAX_SOURCE_FILES\s*=\s*10/, 'UI must enforce ten source files');
 assert.match(multiFileJs, /MAX_SOURCE_CHARS\s*=\s*100_000/, 'browser workspace must enforce aggregate source size');
+assert.match(multiFileJs, /function normalizePrimaryClassName\(/,
+  'primary class input must normalize a mistakenly entered .java suffix');
+assert.match(multiFileJs, /\.endsWith\(['"]\.java['"]\)/,
+  'primary class normalization must recognize the .java suffix');
 assert.match(multiFileJs, /getFiles\s*:/, 'workspace API must expose getFiles');
 assert.match(multiFileJs, /activateFile\s*:/, 'workspace API must expose activateFile');
 assert.match(multiFileJs, /function activateFile\(/, 'workspace must support file activation by filename');
