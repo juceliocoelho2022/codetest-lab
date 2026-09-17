@@ -9,9 +9,15 @@ const studentCss = fs.existsSync('src/main/resources/static/student-editor.css')
 const healthCss = fs.existsSync('src/main/resources/static/runner-health.css')
   ? fs.readFileSync('src/main/resources/static/runner-health.css', 'utf8')
   : '';
+const multiFileCss = fs.existsSync('src/main/resources/static/multi-file-editor.css')
+  ? fs.readFileSync('src/main/resources/static/multi-file-editor.css', 'utf8')
+  : '';
 const js = fs.readFileSync('src/main/resources/static/app.js', 'utf8');
 const healthJs = fs.existsSync('src/main/resources/static/runner-health.js')
   ? fs.readFileSync('src/main/resources/static/runner-health.js', 'utf8')
+  : '';
+const multiFileJs = fs.existsSync('src/main/resources/static/multi-file-editor.js')
+  ? fs.readFileSync('src/main/resources/static/multi-file-editor.js', 'utf8')
   : '';
 const frontendCode = `${html}\n${js}`;
 
@@ -94,7 +100,6 @@ assert.match(healthCss, /\.runner-health\.degraded/, 'degraded health state must
 assert.match(healthCss, /\.runner-health\.down/, 'down health state must be styled');
 
 // v0.3.5 Execution Guard.
-assert.match(healthJs, /MVP 0\.3\.5/, 'health UI must advance the visible MVP badge to v0.3.5');
 assert.match(healthJs, /executionGuard/, 'execution guard UI must be created by the health module');
 assert.match(healthJs, /executionGuardMessage/, 'execution guard explanation must be maintained');
 assert.match(healthJs, /function setExecutionAvailability\(/, 'health UI must control execution availability');
@@ -105,4 +110,21 @@ assert.match(healthJs, /disabled\s*=\s*!ready/, 'execution controls must be disa
 assert.match(healthCss, /\.execution-guard/, 'execution guard message must be styled');
 assert.match(healthCss, /\.execution-guard\.visible/, 'execution guard visible state must be styled');
 
-console.log('UI_SMOKE_V035_EXECUTION_GUARD_OK');
+// v0.4.0 multi-file personal workspace.
+assert.match(html, /id="sourceFileTabs"/, 'source file tab bar must exist');
+assert.match(html, /id="addSourceFile"/, 'new source file action must exist');
+assert.match(html, /id="renameSourceFile"/, 'rename source file action must exist');
+assert.match(html, /id="deleteSourceFile"/, 'delete source file action must exist');
+assert.match(html, /multi-file-editor\.css/, 'multi-file editor stylesheet must load');
+assert.match(html, /multi-file-editor\.js/, 'multi-file editor script must load');
+assert.match(html, /Classe principal/, 'personal class field must identify the primary class');
+assert.match(html, /MVP 0\.4\.0/, 'MVP badge must identify v0.4.0');
+assert.doesNotMatch(healthJs, /MVP 0\.3\.5/, 'health module must not overwrite the v0.4.0 badge');
+assert.match(multiFileJs, /MAX_SOURCE_FILES\s*=\s*10/, 'UI must enforce ten source files');
+assert.match(multiFileJs, /getFiles\s*:/, 'workspace API must expose getFiles');
+assert.match(multiFileJs, /activateFile\s*:/, 'workspace API must expose activateFile');
+assert.match(multiFileJs, /renameActiveFile/, 'source files must be renameable');
+assert.match(multiFileJs, /deleteActiveFile/, 'source files must be deletable');
+assert.match(multiFileCss, /\.source-file-tabs/, 'source file tabs must be styled');
+
+console.log('UI_SMOKE_V040_MULTI_FILE_OK');
