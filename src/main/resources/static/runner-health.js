@@ -7,9 +7,6 @@
     document.getElementById('submitZip')
   ].filter(Boolean);
 
-  const badge = document.querySelector('.badge');
-  if (badge) badge.textContent = 'MVP 0.3.5';
-
   if (!runnerHealth || !runnerHealthLabel) return;
 
   const shell = document.querySelector('.shell');
