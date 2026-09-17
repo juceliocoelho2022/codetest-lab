@@ -121,10 +121,18 @@ assert.match(html, /Classe principal/, 'personal class field must identify the p
 assert.match(html, /MVP 0\.4\.0/, 'MVP badge must identify v0.4.0');
 assert.doesNotMatch(healthJs, /MVP 0\.3\.5/, 'health module must not overwrite the v0.4.0 badge');
 assert.match(multiFileJs, /MAX_SOURCE_FILES\s*=\s*10/, 'UI must enforce ten source files');
+assert.match(multiFileJs, /MAX_SOURCE_CHARS\s*=\s*100_000/, 'browser workspace must enforce aggregate source size');
 assert.match(multiFileJs, /getFiles\s*:/, 'workspace API must expose getFiles');
 assert.match(multiFileJs, /activateFile\s*:/, 'workspace API must expose activateFile');
+assert.match(multiFileJs, /function activateFile\(/, 'workspace must support file activation by filename');
 assert.match(multiFileJs, /renameActiveFile/, 'source files must be renameable');
 assert.match(multiFileJs, /deleteActiveFile/, 'source files must be deletable');
 assert.match(multiFileCss, /\.source-file-tabs/, 'source file tabs must be styled');
+assert.match(js, /sourceFiles:\s*window\.codeTestSourceWorkspace\.getFiles\(\)/,
+  'personal execution must send sourceFiles');
+assert.doesNotMatch(js, /sourceCode:\s*\$\(['"]personalSource['"]\)\.value/,
+  'personal browser flow must stop sending legacy sourceCode');
+assert.match(js, /codeTestSourceWorkspace\.activateFile\(details\.file\)/,
+  'compile diagnostics must activate the reported Java source file');
 
 console.log('UI_SMOKE_V040_MULTI_FILE_OK');
