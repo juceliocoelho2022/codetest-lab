@@ -363,13 +363,15 @@ function diagnosticEditorKey(result, details) {
   if (result.status === 'FAILED') return 'test';
   if (result.status !== 'COMPILE_ERROR') return null;
 
-  const file = (details.file || '').toLowerCase();
-  const className = $('personalClassName').value.trim().split('.').pop();
-  const sourceFile = `${className}.java`.toLowerCase();
+  const file = details.file || '';
+  if (file.toLowerCase().endsWith('test.java')) return 'test';
 
-  if (file && file === sourceFile) return 'source';
-  if (file.endsWith('test.java')) return 'test';
-  return 'source';
+  if (window.codeTestSourceWorkspace && file) {
+    const activated = window.codeTestSourceWorkspace.activateFile(details.file);
+    return activated ? 'source' : null;
+  }
+
+  return null;
 }
 
 function markDiagnosticLine(result, details) {
@@ -389,9 +391,16 @@ function appendDiagnosticAction(container, result, details) {
   const button = document.createElement('button');
   button.className = 'diagnostic-jump';
   button.type = 'button';
-  const editorLabel = editorKey === 'source' ? 'Código Java' : 'Teste JUnit 5';
+  const editorLabel = editorKey === 'source'
+    ? (window.codeTestSourceWorkspace?.getActiveFileName() || 'Código Java')
+    : 'Teste JUnit 5';
   button.textContent = `↗ Ir para linha ${details.line} • ${editorLabel}`;
-  button.addEventListener('click', () => jumpToEditorLine(editorKey, details.line, true));
+  button.addEventListener('click', () => {
+    if (editorKey === 'source' && details.file) {
+      window.codeTestSourceWorkspace?.activateFile(details.file);
+    }
+    jumpToEditorLine(editorKey, details.line, true);
+  });
 
   actions.appendChild(button);
   container.appendChild(actions);
@@ -593,12 +602,16 @@ async function runPersonalTests() {
   runPersonalButton.textContent = 'Executando...';
 
   try {
+    if (!window.codeTestSourceWorkspace) {
+      throw new Error('O workspace de arquivos Java não foi inicializado.');
+    }
+
     const result = await api('/api/v1/playground/run', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
         className: $('personalClassName').value,
-        sourceCode: $('personalSource').value,
+        sourceFiles: window.codeTestSourceWorkspace.getFiles(),
         testCode: $('personalTest').value,
         executionProfile: $('executionProfile').value
       })

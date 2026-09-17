@@ -12,9 +12,10 @@
       document.documentElement.dataset.theme = savedTheme || systemTheme;
     })();
   </script>
-  <link rel="stylesheet" href="/styles.css">
-  <link rel="stylesheet" href="/student-editor.css">
-  <link rel="stylesheet" href="/runner-health.css">
+  <link rel="stylesheet" href="/styles.css?v=0.4.0">
+  <link rel="stylesheet" href="/student-editor.css?v=0.4.0">
+  <link rel="stylesheet" href="/runner-health.css?v=0.4.0">
+  <link rel="stylesheet" href="/multi-file-editor.css?v=0.4.0">
 </head>
 <body>
 <header class="hero">
@@ -24,7 +25,7 @@
     <p>Teste código Java no modo pessoal ou crie exercícios com testes ocultos para seus alunos.</p>
   </div>
   <div class="hero-actions">
-    <div class="badge">MVP 0.3.4</div>
+    <div class="badge">MVP 0.4.0</div>
     <button id="runnerHealth" class="runner-health checking" type="button"
             aria-label="Verificar ambiente Docker" title="Verificando Docker e runner">
       <span class="runner-health-dot" aria-hidden="true"></span>
@@ -48,13 +49,13 @@
     <div class="panel-heading">
       <div>
         <h2>Playground de testes</h2>
-        <p>Escolha o perfil, cole sua classe Java e o teste que deseja executar.</p>
+        <p>Escolha o perfil, organize seus arquivos Java e execute o teste.</p>
       </div>
       <div class="shortcut-hint"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> para executar</div>
     </div>
 
     <div class="class-run-row">
-      <label class="class-field">Nome da classe
+      <label class="class-field">Classe principal
         <input id="personalClassName" value="Calculadora" maxlength="180">
       </label>
 
@@ -130,11 +131,19 @@
     </div>
 
     <div class="editor-grid">
-      <label class="editor-field">
+      <div class="editor-field">
         <span class="editor-label-row">
           <span>Código Java</span>
           <span class="editor-language">JAVA 21</span>
         </span>
+        <div class="source-file-toolbar">
+          <div id="sourceFileTabs" class="source-file-tabs" role="tablist" aria-label="Arquivos Java"></div>
+          <div class="source-file-actions">
+            <button id="renameSourceFile" class="source-file-action" type="button">Renomear</button>
+            <button id="deleteSourceFile" class="source-file-action danger" type="button">Excluir</button>
+            <button id="addSourceFile" class="source-file-add" type="button">+ Novo arquivo</button>
+          </div>
+        </div>
         <div class="code-editor" data-editor="source">
           <div id="personalSourceLines" class="line-gutter" aria-hidden="true"></div>
           <textarea id="personalSource" spellcheck="false" wrap="off">public class Calculadora {
@@ -143,7 +152,7 @@
     }
 }</textarea>
         </div>
-      </label>
+      </div>
 
       <label class="editor-field">
         <span class="editor-label-row">
@@ -267,8 +276,9 @@ class CalculadoraTest {
   <span>CodeTest Lab • Java Backend Testing Platform</span>
   <span>Execução isolada via Docker</span>
 </footer>
-<script src="/app.js"></script>
-<script src="/runner-health.js"></script>
+<script src="/app.js?v=0.4.0"></script>
+<script src="/multi-file-editor.js?v=0.4.0"></script>
+<script src="/runner-health.js?v=0.4.0"></script>
 <script>
   setupNumberedEditor('studentSource', 'studentSourceLines');
 </script>
