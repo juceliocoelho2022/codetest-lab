@@ -14,7 +14,7 @@ The approved UX is based on **file tabs + `+ Novo arquivo`**, with a hard limit 
 
 - Multiple Java files in the personal playground.
 - File tabs for switching between source files.
-- Create, rename and delete source files.
+- Create, rename and delete non-primary source files.
 - Maximum of 10 Java source files.
 - Maximum aggregate source size of 100,000 characters per execution.
 - One existing JUnit test editor remains in place.
@@ -175,13 +175,9 @@ Professional example:
 
 Only one Java source editor is visible at a time. Switching tabs swaps the editor content in memory. This avoids stacking multiple editors and preserves the viewport layout already stabilized in v0.3.x.
 
-Each tab supports:
+Each tab supports selection and rename. Non-primary tabs also support delete. The primary source tab cannot be deleted in v0.4.0; changing the primary source is done by renaming that primary tab.
 
-- select;
-- rename;
-- delete, except when it is the only remaining source file.
-
-`+ Novo arquivo` creates a new file with a safe default name such as `NovaClasse.java`, adding a numeric suffix when necessary.
+`+ Novo arquivo` creates a new file with a safe default name such as `NovaClasse.java`, adding a numeric suffix when necessary. Its initial content is a minimal matching class skeleton, for example `public class NovaClasse {}`.
 
 The UI must prevent creating file 11 and show a concise message explaining the 10-file limit.
 
@@ -191,9 +187,15 @@ The existing `Nome da classe` input becomes `Classe principal`.
 
 It continues to determine the primary class used by diagnostics and compatibility behavior.
 
-The UI keeps the primary filename synchronized with the class name when the primary tab is renamed through the dedicated rename action. Directly editing Java source code does not attempt to parse and auto-rename the file.
+Primary-file synchronization is explicit:
 
-Before execution, the client verifies that `<ClassePrincipal>.java` exists. The server performs the same validation authoritatively.
+- renaming the primary tab from `PedidoService.java` to `PagamentoService.java` also updates `Classe principal` to `PagamentoService`;
+- editing the `Classe principal` text field does **not** rename any file automatically;
+- execution is allowed only when a matching `<ClassePrincipal>.java` file exists.
+
+Directly editing Java source code does not attempt to parse and auto-rename the file.
+
+The client verifies the matching primary file before execution. The server performs the same validation authoritatively.
 
 ### 7. Diagnostic navigation
 
@@ -335,6 +337,8 @@ Verify:
 - source-file tab bar exists;
 - `+ Novo arquivo` exists;
 - create/switch/rename/delete behavior is wired;
+- primary file cannot be deleted;
+- renaming the primary tab updates `Classe principal`;
 - 10-file limit is enforced in the UI;
 - request body sends `sourceFiles`;
 - diagnostic filename activates the matching tab;
