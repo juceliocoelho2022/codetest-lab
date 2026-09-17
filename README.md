@@ -16,7 +16,7 @@ O **CodeTest Lab** é uma aplicação desenvolvida em Java 21 e Spring Boot para
 
 O projeto nasceu com dois objetivos principais:
 
-- oferecer um **modo pessoal**, onde o desenvolvedor pode colar código Java e executar testes JUnit;
+- oferecer um **modo pessoal**, onde o desenvolvedor pode trabalhar com até 10 arquivos Java em abas e executar testes com JUnit, Mockito e JaCoCo;
 - oferecer um **modo Professor / Aluno**, onde exercícios podem ser criados com testes ocultos e os alunos enviam suas soluções por código ou arquivo `.zip`.
 
 O código submetido não é executado diretamente na JVM do backend. O sistema cria um workspace temporário e delega a execução para um container Docker controlado.
@@ -25,8 +25,14 @@ O código submetido não é executado diretamente na JVM do backend. O sistema c
 
 - execução de código Java com **JUnit 5**;
 - suporte a **Mockito** nos testes;
+- cobertura com **JaCoCo** para linhas, métodos, branches e classes;
 - execução isolada em **Docker Sandbox**;
-- modo pessoal para testes rápidos;
+- modo pessoal com **até 10 arquivos Java em abas**;
+- limite agregado de 100.000 caracteres no workspace pessoal;
+- navegação de erros de compilação para o arquivo e linha correspondentes;
+- diagnóstico estruturado de `PASSED`, `FAILED`, `COMPILE_ERROR`, `TIMEOUT` e `INFRASTRUCTURE_ERROR`;
+- Docker Health com estados `UP`, `DEGRADED` e `DOWN`;
+- Execution Guard que bloqueia execuções quando Docker/runner não estão prontos;
 - criação de exercícios para professores;
 - testes ocultos para avaliação automática;
 - submissão de soluções por código-fonte;
@@ -67,6 +73,7 @@ Este projeto demonstra, na prática, conhecimentos relevantes para desenvolvimen
 
 - JUnit 5
 - Mockito
+- JaCoCo
 - testes unitários
 - assertions
 - mocks
@@ -87,6 +94,7 @@ Este projeto demonstra, na prática, conhecimentos relevantes para desenvolvimen
 - `cap-drop ALL`
 - proteção contra Zip Slip
 - execução de processos com `ProcessBuilder`
+- health check do ambiente de execução
 
 ### Desenvolvimento e engenharia
 
@@ -96,6 +104,7 @@ Este projeto demonstra, na prática, conhecimentos relevantes para desenvolvimen
 - refatoração incremental
 - tratamento de erros
 - processamento de arquivos ZIP
+- workspace Java multi-file
 - organização de projeto Maven
 - documentação técnica
 
@@ -104,16 +113,23 @@ Este projeto demonstra, na prática, conhecimentos relevantes para desenvolvimen
 ```text
 Browser
    |
+   |--- sourceFiles[]
+   |--- testCode
+   |--- executionProfile
    v
 Spring Boot API
    |
    |--- Playground
    |--- Exercises
    |--- Submissions
+   |--- Docker Health
    |--- H2 / PostgreSQL
    |
    v
 CodeExecutor
+   |
+   v
+Workspace Maven temporário
    |
    v
 Docker Sandbox
@@ -121,31 +137,35 @@ Docker Sandbox
    |--- Java 21
    |--- Maven Offline
    |--- JUnit 5
-   `--- Mockito
+   |--- Mockito
+   `--- JaCoCo
 ```
 
 ## 🔄 Fluxo de execução
 
 ```text
-Usuário envia código
+Usuário organiza um ou mais arquivos Java
         |
         v
-Spring Boot recebe a requisição
+Browser envia sourceFiles[] + teste + perfil
+        |
+        v
+Spring Boot valida a requisição
         |
         v
 Workspace temporário é criado
         |
         v
-Código + teste são preparados
+Arquivos Java + teste são materializados
         |
         v
 Docker Sandbox executa Maven/JUnit
         |
         v
-Resultado é processado
+Resultado e cobertura são processados
         |
         v
-API devolve status, métricas e log
+API devolve status, métricas, cobertura e log
 ```
 
 ## 🧪 Cenários já validados
@@ -158,7 +178,7 @@ Exemplo:
 assertEquals(15, calculadora.somar(10, 5));
 ```
 
-Resultado esperado:
+Resultado:
 
 ```text
 PASSED
@@ -182,13 +202,42 @@ FAILED
 expected: <14> but was: <15>
 ```
 
-Isso confirma que o CodeTest Lab diferencia corretamente um código que compila, mas não atende ao comportamento esperado pelo teste.
+### ⚠ Erro de compilação estruturado
 
-### ⚠ Próximo cenário de validação
+O sistema identifica arquivo, linha, coluna e mensagem do compilador e oferece navegação para a linha correspondente no editor.
 
-- erro de compilação Java;
-- identificação amigável de `COMPILE ERROR`;
-- apresentação estruturada da linha e causa do erro.
+Exemplo de status:
+
+```text
+COMPILE_ERROR
+Arquivo: PedidoService.java
+Linha: 3
+Coluna: 19
+Problema: cannot find symbol
+```
+
+### ✅ Multi-file + Mockito
+
+Cenário validado com:
+
+```text
+PedidoService.java
+EstoqueRepository.java
+PedidoServiceTest.java
+```
+
+usando `JUnit 5 + Mockito` dentro do runner Docker, com resultado:
+
+```text
+PASSED
+1 executado
+1 aprovado
+0 falhas
+```
+
+### ✅ JaCoCo
+
+O modo pessoal também foi validado com cobertura JaCoCo exibindo percentuais de linhas, métodos, branches e classes.
 
 ## 🔐 Segurança do runner
 
@@ -226,6 +275,7 @@ Também são aplicados:
 | Hibernate | ORM |
 | JUnit 5 | Testes automatizados |
 | Mockito | Mocks e isolamento de dependências |
+| JaCoCo | Cobertura de código |
 | PostgreSQL 17 | Banco relacional |
 | H2 | Banco em memória para desenvolvimento |
 | Docker | Sandbox de execução |
@@ -298,6 +348,7 @@ DB_PASSWORD
 
 ```text
 GET  /api/v1/health
+GET  /api/v1/health/runner
 POST /api/v1/playground/run
 
 POST /api/v1/exercises
@@ -362,14 +413,22 @@ Execute:
 
 ```powershell
 mvn test
+node tools/ui-smoke.mjs
+node tools/cache-busting-smoke.mjs
 ```
 
 O projeto possui testes para componentes como:
 
 - parser de resultados;
 - construção segura do comando Docker;
-- leitura de relatórios Surefire;
+- Docker Health;
+- perfis de execução;
+- leitura de relatórios Surefire e JaCoCo;
 - extração segura de arquivos ZIP;
+- normalização e validação de múltiplos arquivos Java;
+- criação segura do workspace Maven;
+- contrato multi-file do playground;
+- smoke tests da interface e cache-busting;
 - regras do serviço de exercícios com Mockito.
 
 ## 🛣 Roadmap
@@ -382,11 +441,14 @@ O projeto possui testes para componentes como:
 - [x] envio por ZIP
 - [x] modo Professor / Aluno
 - [x] detecção de assertion failure
-- [ ] detecção estruturada de erro de compilação
-- [ ] JaCoCo e dashboard de cobertura
+- [x] detecção estruturada de erro de compilação
+- [x] JaCoCo e dashboard de cobertura
+- [x] Docker Health + Execution Guard
+- [x] playground Java multi-file em abas
+- [ ] múltiplos arquivos de teste
+- [ ] packages Java e árvore de projeto
 - [ ] autenticação e autorização PROFESSOR / ALUNO
 - [ ] PostgreSQL com Flyway
-- [ ] dashboard visual de execuções
 - [ ] fila de execução com Kafka
 - [ ] observabilidade com métricas e logs
 - [ ] IA para explicar falhas de testes
@@ -405,6 +467,8 @@ A plataforma permite demonstrar na prática conceitos como:
 - mocks;
 - testes positivos e negativos;
 - análise de stack trace;
+- cobertura de código;
+- organização de múltiplas classes Java;
 - boas práticas de desenvolvimento;
 - execução isolada e segura de código.
 
