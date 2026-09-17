@@ -14,14 +14,31 @@
     return;
   }
 
+  function normalizePrimaryClassName(value) {
+    let className = String(value || '').trim();
+    if (className.toLowerCase().endsWith('.java')) {
+      className = className.slice(0, -'.java'.length).trim();
+    }
+    return className;
+  }
+
+  function normalizePrimaryClassInput() {
+    const normalized = normalizePrimaryClassName(classNameInput.value);
+    if (normalized !== classNameInput.value.trim()) {
+      classNameInput.value = normalized;
+    }
+    return normalized;
+  }
+
+  const initialClassName = normalizePrimaryClassInput();
   let files = [{
-    fileName: `${classNameInput.value.trim()}.java`,
+    fileName: `${initialClassName}.java`,
     content: sourceTextarea.value
   }];
   let activeIndex = 0;
 
   function primaryFileName() {
-    const className = classNameInput.value.trim();
+    const className = normalizePrimaryClassName(classNameInput.value);
     return className ? `${className}.java` : '';
   }
 
@@ -165,6 +182,7 @@
 
   function getFiles() {
     persistActiveContent();
+    normalizePrimaryClassInput();
 
     const total = files.reduce((sum, file) => sum + file.content.length, 0);
     if (total > MAX_SOURCE_CHARS) {
@@ -192,6 +210,10 @@
   });
   deleteButton.addEventListener('click', deleteActiveFile);
   classNameInput.addEventListener('input', renderTabs);
+  classNameInput.addEventListener('blur', () => {
+    normalizePrimaryClassInput();
+    renderTabs();
+  });
 
   window.codeTestSourceWorkspace = {
     getFiles: getFiles,
