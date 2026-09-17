@@ -36,16 +36,33 @@ public final class WorkspaceFactory {
             new SafeZipExtractor(properties.maxZipEntries(), properties.maxExtractedBytes())
                     .extractJavaSources(request.zipBytes(), mainRoot);
         } else {
-            if (request.sourceCode().length() > properties.maxSourceChars()) {
-                throw new IllegalArgumentException("O código-fonte excede o limite permitido.");
-            }
-            String sourceFile = simpleClassName(request.className()) + ".java";
-            Files.writeString(mainRoot.resolve(sourceFile), request.sourceCode(), StandardCharsets.UTF_8);
+            writeSourceFiles(mainRoot, request);
         }
 
         String testClassName = findTestClassName(request.testCode());
         Files.writeString(testRoot.resolve(testClassName + ".java"), request.testCode(), StandardCharsets.UTF_8);
         return workspace;
+    }
+
+    private void writeSourceFiles(Path mainRoot, ExecutionRequest request) throws IOException {
+        long totalChars = request.sourceFiles().stream()
+                .mapToLong(file -> file.content().length())
+                .sum();
+        if (totalChars > properties.maxSourceChars()) {
+            throw new IllegalArgumentException("O código-fonte excede o limite permitido.");
+        }
+
+        Path normalizedRoot = mainRoot.toAbsolutePath().normalize();
+        for (JavaSourceFile sourceFile : request.sourceFiles()) {
+            JavaSourceFile validated = new JavaSourceFile(sourceFile.fileName(), sourceFile.content());
+            Path target = normalizedRoot.resolve(validated.fileName()).normalize();
+
+            if (!target.startsWith(normalizedRoot) || !normalizedRoot.equals(target.getParent())) {
+                throw new IllegalArgumentException("Nome de arquivo Java inválido.");
+            }
+
+            Files.writeString(target, validated.content(), StandardCharsets.UTF_8);
+        }
     }
 
     static String simpleClassName(String className) {
