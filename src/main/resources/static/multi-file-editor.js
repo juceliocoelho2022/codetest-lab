@@ -165,6 +165,17 @@
 
   function getFiles() {
     persistActiveContent();
+
+    const total = files.reduce((sum, file) => sum + file.content.length, 0);
+    if (total > MAX_SOURCE_CHARS) {
+      throw new Error('O código-fonte excede o limite total de 100.000 caracteres.');
+    }
+
+    const primary = primaryFileName();
+    if (!primary || !files.some(file => file.fileName === primary)) {
+      throw new Error('O arquivo da classe principal não existe.');
+    }
+
     return files.map(file => ({...file}));
   }
 
